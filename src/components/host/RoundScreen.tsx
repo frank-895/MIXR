@@ -8,34 +8,56 @@ export function RoundScreen({ game }: { game: Doc<'games'> }) {
   const round = useQuery(api.rounds.getCurrent, { gameId: game._id })
 
   if (!round) {
-    return <div className="screen center">Loading round...</div>
+    return (
+      <div className="host-shell">
+        <main className="screen center">
+          <span className="material-symbols-outlined animate-spin" style={{ fontSize: 48 }}>
+            hourglass_empty
+          </span>
+          <h2>LOADING ROUND...</h2>
+        </main>
+      </div>
+    )
   }
 
   const targetTime =
     round.state === 'caption' ? round.captionEndsAt : round.voteEndsAt
 
   return (
-    <div className="screen host-round">
-      <div className="round-main">
-        <div className="round-header">
-          <span>
-            Round {game.currentRound} / {game.totalRounds}
-          </span>
-          <span className="phase-label">
-            {round.state === 'caption'
-              ? 'Captioning...'
-              : round.state === 'vote'
-                ? 'Voting...'
-                : 'Round Complete'}
-          </span>
-          {round.state !== 'finished' && <Timer targetTime={targetTime} />}
+    <div className="host-shell">
+      {/* Header */}
+      <header className="brutal-header">
+        <div className="badge badge--primary">
+          ROUND {game.currentRound} / {game.totalRounds}
         </div>
+        <div
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: 20,
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            color: round.state === 'caption' ? '#000' : 'var(--pink)',
+          }}
+        >
+          {round.state === 'caption'
+            ? 'CAPTIONING...'
+            : round.state === 'vote'
+              ? 'VOTING...'
+              : 'ROUND COMPLETE'}
+        </div>
+        {round.state !== 'finished' && <Timer targetTime={targetTime} />}
+      </header>
 
-        <img className="meme-image" src={round.imageUrl} alt="Meme template" />
-      </div>
-
-      <div className="round-sidebar">
-        <Leaderboard gameId={game._id} />
+      {/* Main Layout */}
+      <div className="host-round-layout">
+        <div className="host-round-main">
+          <div className="meme-frame">
+            <img src={round.imageUrl} alt="Meme template" />
+          </div>
+        </div>
+        <div className="host-round-sidebar">
+          <Leaderboard gameId={game._id} />
+        </div>
       </div>
     </div>
   )
@@ -43,5 +65,11 @@ export function RoundScreen({ game }: { game: Doc<'games'> }) {
 
 function Timer({ targetTime }: { targetTime: number }) {
   const seconds = useCountdown(targetTime)
-  return <span className="timer">{seconds}s</span>
+  const formatted = String(seconds).padStart(2, '0')
+  return (
+    <div className="timer-badge">
+      <span className="material-symbols-outlined">timer</span>
+      <span>00:{formatted}</span>
+    </div>
+  )
 }

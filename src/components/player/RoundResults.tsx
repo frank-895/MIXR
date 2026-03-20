@@ -17,24 +17,62 @@ export function RoundResults({
   })
 
   return (
-    <div className="screen center">
+    <main className="screen center">
       <h2>
-        Round {game.currentRound} / {game.totalRounds} - Complete
+        ROUND {game.currentRound} / {game.totalRounds}
       </h2>
+      <h1 style={{ fontSize: 36 }}>COMPLETE</h1>
 
       {caption ? (
-        <div className="round-result">
-          <p>Your caption:</p>
-          <p className="caption-text">"{caption.text}"</p>
-          <p className="score">
-            Score: <strong>{caption.score}</strong>
+        <div className="brutal-card" style={{ padding: 24, width: '100%' }}>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 12,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              marginBottom: 8,
+            }}
+          >
+            YOUR CAPTION:
           </p>
+          <p
+            style={{
+              fontFamily: 'var(--font-heading)',
+              fontSize: 24,
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              marginBottom: 16,
+            }}
+          >
+            "{caption.text}"
+          </p>
+          <div
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 20,
+              fontWeight: 700,
+              border: '2px solid #000',
+              background: 'var(--primary)',
+              padding: '4px 12px',
+              display: 'inline-block',
+              boxShadow: '2px 2px 0px #000',
+            }}
+          >
+            {caption.score} PTS
+          </div>
         </div>
       ) : (
-        <p>You didn't submit a caption this round.</p>
+        <div className="brutal-card" style={{ padding: 24, width: '100%' }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, textTransform: 'uppercase' }}>
+            YOU DIDN'T SUBMIT A CAPTION THIS ROUND.
+          </p>
+        </div>
       )}
 
-      <p className="hint">Next round starting soon...</p>
-    </div>
+      <p className="animate-pulse" style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 700, textTransform: 'uppercase' }}>
+        NEXT ROUND STARTING SOON...
+      </p>
+    </main>
   )
 }

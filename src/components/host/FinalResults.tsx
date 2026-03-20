@@ -6,35 +6,65 @@ export function FinalResults({ game }: { game: Doc<'games'> }) {
   const scores = useQuery(api.players.getScores, { gameId: game._id })
 
   if (!scores) {
-    return <div className="screen center">Loading results...</div>
+    return (
+      <div className="host-shell">
+        <main className="screen center">
+          <span className="material-symbols-outlined animate-spin" style={{ fontSize: 48 }}>
+            hourglass_empty
+          </span>
+          <h2>LOADING RESULTS...</h2>
+        </main>
+      </div>
+    )
   }
 
   const winner = scores[0]
 
   return (
-    <div className="screen center">
-      <h1>Game Over!</h1>
+    <div className="host-shell">
+      <header className="brutal-header" style={{ justifyContent: 'center' }}>
+        <h2 style={{ fontSize: 24, margin: 0 }}>RESULTS</h2>
+      </header>
 
-      {winner && (
-        <div className="winner">
-          <h2>Winner</h2>
-          <p className="winner-name">{winner.name}</p>
-          <p className="winner-score">{winner.totalScore} points</p>
-        </div>
-      )}
+      <main style={{ flex: 1, padding: 24, display: 'flex', flexDirection: 'column', gap: 32, maxWidth: 500, margin: '0 auto', width: '100%' }}>
+        {/* Winner */}
+        {winner && (
+          <div>
+            <h2 style={{ textAlign: 'center', fontSize: 36, marginBottom: 16 }}>
+              MEME
+              <br />
+              CHAMPION
+            </h2>
+            <div className="winner-card">
+              <div className="winner-info">
+                <div className="winner-name">
+                  <span>👑</span>
+                  <span>{winner.name}</span>
+                </div>
+                <div className="winner-pts">{winner.totalScore} PTS</div>
+              </div>
+            </div>
+          </div>
+        )}
 
-      <div className="leaderboard">
-        <h2>Final Standings</h2>
-        <ol>
-          {scores.map((entry, i) => (
-            <li key={entry.playerId} className="leaderboard-entry">
-              <span className="rank">#{i + 1}</span>
-              <span className="name">{entry.name}</span>
-              <span className="score">{entry.totalScore}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
+        {/* Leaderboard */}
+        {scores.length > 1 && (
+          <div className="leaderboard">
+            <div className="leaderboard-title">LOSERS BRACKET</div>
+            <ol className="leaderboard-list">
+              {scores.slice(1).map((entry, i) => (
+                <li key={entry.playerId} className="leaderboard-row">
+                  <div className="leaderboard-left">
+                    <span className="leaderboard-rank">{i + 2}</span>
+                    <span className="leaderboard-name">{entry.name}</span>
+                  </div>
+                  <span className="leaderboard-score">{entry.totalScore} PTS</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+      </main>
     </div>
   )
 }

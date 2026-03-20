@@ -16,36 +16,50 @@ export function Lobby({
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(joinUrl)}`
 
   return (
-    <div className="screen">
-      <h1>Game Lobby</h1>
-      <p className="game-code">
-        Code: <strong>{gameCode}</strong>
-      </p>
+    <div className="host-shell">
+      <header className="brutal-header" style={{ justifyContent: 'center' }}>
+        <h2 style={{ fontSize: 24, margin: 0 }}>GAME LOBBY</h2>
+      </header>
 
-      <div className="qr-section">
-        <img src={qrUrl} alt="QR code to join game" width={200} height={200} />
-        <p className="join-url">{joinUrl}</p>
-      </div>
+      <main className="screen center" style={{ paddingBottom: 24 }}>
+        <div className="game-code">
+          CODE
+          <strong>{gameCode}</strong>
+        </div>
 
-      <div className="player-list">
-        <h2>Players ({players?.length ?? 0})</h2>
-        <ul>
+        <div className="qr-section">
+          <img src={qrUrl} alt="QR code to join game" width={200} height={200} />
+          <p className="join-url">{joinUrl}</p>
+        </div>
+
+        <div className="player-list" style={{ maxWidth: 400 }}>
+          <h3 style={{ marginBottom: 8 }}>PLAYERS ({players?.length ?? 0})</h3>
           {players?.map((p) => (
-            <li key={p._id}>{p.name}</li>
+            <div key={p._id} className="player-list-item">
+              {p.name}
+            </div>
           ))}
-        </ul>
-      </div>
+        </div>
 
-      <button
-        type="button"
-        onClick={() => startGame({ gameId: game._id })}
-        disabled={!players || players.length < 2}
-      >
-        Start Game
-      </button>
-      {players && players.length < 2 && (
-        <p className="hint">Need at least 2 players to start</p>
-      )}
+        <button
+          type="button"
+          className="brutal-btn brutal-btn--green"
+          style={{ maxWidth: 400 }}
+          onClick={() => startGame({ gameId: game._id })}
+          disabled={!players || players.length < 2}
+        >
+          <span>START GAME</span>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            play_arrow
+          </span>
+        </button>
+
+        {players && players.length < 2 && (
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 700, textTransform: 'uppercase' }}>
+            NEED AT LEAST 2 PLAYERS TO START
+          </p>
+        )}
+      </main>
     </div>
   )
 }

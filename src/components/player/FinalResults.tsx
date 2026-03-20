@@ -12,43 +12,102 @@ export function FinalResults({
   const scores = useQuery(api.players.getScores, { gameId })
 
   if (!scores) {
-    return <div className="screen center">Loading results...</div>
+    return (
+      <main className="screen center">
+        <span className="material-symbols-outlined animate-spin" style={{ fontSize: 48 }}>
+          hourglass_empty
+        </span>
+        <h2>LOADING...</h2>
+      </main>
+    )
   }
 
+  const winner = scores[0]
   const rank = scores.findIndex((s) => s.playerId === playerId) + 1
   const myScore = scores.find((s) => s.playerId === playerId)
 
   return (
-    <div className="screen center">
-      <h1>Game Over!</h1>
+    <>
+      {/* Header */}
+      <header className="brutal-header" style={{ justifyContent: 'center' }}>
+        <h2 style={{ fontSize: 24, margin: 0 }}>RESULTS</h2>
+      </header>
 
-      {myScore && (
-        <div className="my-result">
-          <p className="rank-display">
-            You placed <strong>#{rank}</strong>
-          </p>
-          <p className="score">{myScore.totalScore} points</p>
-        </div>
-      )}
-
-      <div className="leaderboard">
-        <h2>Final Standings</h2>
-        <ol>
-          {scores.map((entry, i) => (
-            <li
-              key={entry.playerId}
-              className={`leaderboard-entry ${entry.playerId === playerId ? 'you' : ''}`}
+      <main style={{ flex: 1, padding: 24, display: 'flex', flexDirection: 'column', gap: 32, paddingBottom: 120 }}>
+        {/* Your Rank */}
+        {myScore && (
+          <div className="text-center">
+            <h2 style={{ fontSize: 20, marginBottom: 8 }}>YOUR RANK</h2>
+            <div
+              style={{
+                fontFamily: 'var(--font-heading)',
+                fontSize: 64,
+                fontWeight: 800,
+                lineHeight: 1,
+              }}
             >
-              <span className="rank">#{i + 1}</span>
-              <span className="name">
-                {entry.name}
-                {entry.playerId === playerId ? ' (you)' : ''}
-              </span>
-              <span className="score">{entry.totalScore}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </div>
+              #{rank}
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: 20,
+                fontWeight: 700,
+                border: '2px solid #000',
+                background: 'var(--primary)',
+                padding: '4px 12px',
+                display: 'inline-block',
+                boxShadow: '2px 2px 0px #000',
+                marginTop: 8,
+              }}
+            >
+              {myScore.totalScore} PTS
+            </div>
+          </div>
+        )}
+
+        {/* Winner */}
+        {winner && (
+          <div>
+            <h2 style={{ textAlign: 'center', fontSize: 32, marginBottom: 16 }}>
+              MEME
+              <br />
+              CHAMPION
+            </h2>
+            <div className="winner-card">
+              <div className="winner-info">
+                <div className="winner-name">
+                  <span>👑</span>
+                  <span>{winner.name}</span>
+                </div>
+                <div className="winner-pts">{winner.totalScore} PTS</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Leaderboard */}
+        <div className="leaderboard">
+          <div className="leaderboard-title">LOSERS BRACKET</div>
+          <ol className="leaderboard-list">
+            {scores.slice(1).map((entry, i) => (
+              <li
+                key={entry.playerId}
+                className={`leaderboard-row ${entry.playerId === playerId ? 'you' : ''}`}
+              >
+                <div className="leaderboard-left">
+                  <span className="leaderboard-rank">{i + 2}</span>
+                  <span className="leaderboard-name">
+                    {entry.name}
+                    {entry.playerId === playerId ? ' (YOU)' : ''}
+                  </span>
+                </div>
+                <span className="leaderboard-score">{entry.totalScore} PTS</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </main>
+    </>
   )
 }

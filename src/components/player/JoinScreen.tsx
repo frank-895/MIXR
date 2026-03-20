@@ -24,10 +24,14 @@ export function JoinScreen({
 
   if (gameState !== 'lobby') {
     return (
-      <div className="screen center">
-        <h1>Mixr</h1>
-        <p>This game has already started.</p>
-      </div>
+      <main className="screen center">
+        <h1>
+          KNOW
+          <br />
+          YOUR MEME
+        </h1>
+        <p>THIS GAME HAS ALREADY STARTED.</p>
+      </main>
     )
   }
 
@@ -45,31 +49,53 @@ export function JoinScreen({
   }
 
   return (
-    <div className="screen center">
-      <h1>Mixr</h1>
-      <p>Join the game</p>
+    <main className="screen center">
+      <div className="text-center mb-8">
+        <h1>
+          KNOW
+          <br />
+          YOUR MEME
+        </h1>
+      </div>
 
-      <div className="form-group">
-        <input
-          ref={inputRef}
-          type="text"
-          placeholder="Your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
-          maxLength={20}
-        />
+      <div className="form-stack">
+        <div>
+          <label className="sr-only" htmlFor="playerName">
+            Player Name
+          </label>
+          <input
+            ref={inputRef}
+            id="playerName"
+            className="brutal-input"
+            type="text"
+            placeholder="PLAYER NAME"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+            maxLength={20}
+            autoComplete="off"
+            spellCheck={false}
+          />
+        </div>
       </div>
 
       <button
         type="button"
+        className="brutal-btn"
         onClick={handleJoin}
         disabled={joining || !name.trim()}
       >
-        {joining ? 'Joining...' : 'Join'}
+        <span>{joining ? 'JOINING...' : 'ENTER THE CHAT'}</span>
+        <span className="material-symbols-outlined" aria-hidden="true">
+          login
+        </span>
       </button>
 
-      {error && <p className="error">{error}</p>}
-    </div>
+      {error && (
+        <p style={{ color: 'red', fontWeight: 700, textTransform: 'uppercase' }}>
+          {error}
+        </p>
+      )}
+    </main>
   )
 }

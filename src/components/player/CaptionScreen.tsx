@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from 'convex/react'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { Doc, Id } from '../../../convex/_generated/dataModel'
 import { useCountdown } from '../../lib/useCountdown'
@@ -7,7 +7,7 @@ import { useCountdown } from '../../lib/useCountdown'
 export function CaptionScreen({
   round,
   playerId,
-  game,
+  game: _game,
 }: {
   round: Doc<'rounds'>
   playerId: Id<'players'>
@@ -21,13 +21,6 @@ export function CaptionScreen({
   const seconds = useCountdown(round.captionEndsAt)
   const [text, setText] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (!existing) {
-      inputRef.current?.focus()
-    }
-  }, [existing])
 
   const handleSubmit = async () => {
     if (!text.trim()) return
@@ -43,44 +36,88 @@ export function CaptionScreen({
     }
   }
 
-  return (
-    <div className="screen center">
-      <div className="round-header">
-        <span>
-          Round {game.currentRound} / {game.totalRounds}
-        </span>
-        <span className="timer">{seconds}s</span>
-      </div>
+  const formatted = String(seconds).padStart(2, '0')
 
-      <img className="meme-image" src={round.imageUrl} alt="Meme template" />
-
-      {existing ? (
-        <div className="submitted">
-          <p>Caption submitted!</p>
-          <p className="caption-text">"{existing.text}"</p>
-        </div>
-      ) : (
-        <>
-          <div className="form-group">
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Write your caption..."
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              maxLength={200}
-            />
+  // Waiting overlay after submission
+  if (existing) {
+    return (
+      <>
+        <div className="waiting-overlay">
+          <div className="waiting-overlay-box">
+            <span
+              className="material-symbols-outlined animate-spin"
+              aria-hidden="true"
+              style={{ fontSize: 64, marginBottom: 24, display: 'block', color: 'white' }}
+            >
+              hourglass_empty
+            </span>
+            <h2>
+              WAITING
+              <br />
+              FOR
+              <br />
+              SLOWPOKES...
+            </h2>
+            <p className="animate-pulse" style={{ marginTop: 24 }}>
+              DO NOT CLOSE APP
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={submitting || !text.trim()}
-          >
-            {submitting ? 'Submitting...' : 'Submit Caption'}
-          </button>
-        </>
-      )}
-    </div>
+        </div>
+      </>
+    )
+  }
+
+  return (
+    <>
+      {/* Header */}
+      <header className="brutal-header">
+        <div style={{ width: 48 }} />
+        <div className="timer-badge">
+          <span className="material-symbols-outlined">timer</span>
+          <span>00:{formatted}</span>
+        </div>
+      </header>
+
+      {/* Main */}
+      <main style={{ flex: 1, padding: 16, display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 120 }}>
+        {/* Meme Image */}
+        <div className="meme-frame">
+          <img src={round.imageUrl} alt="Meme template" />
+        </div>
+
+        {/* Caption Input */}
+        <div style={{ position: 'relative' }}>
+          <label className="sr-only" htmlFor="caption">
+            Enter your meme caption
+          </label>
+          <textarea
+            id="caption"
+            className="brutal-textarea"
+            placeholder="MAKE IT FUNNY..."
+            value={text}
+            onChange={(e) => setText(e.target.value.slice(0, 140))}
+            maxLength={140}
+          />
+          <div className="char-counter">
+            <span>{text.length}</span>/140
+          </div>
+        </div>
+      </main>
+
+      {/* Fixed Bottom Button */}
+      <div className="fixed-bottom">
+        <button
+          type="button"
+          className="brutal-btn brutal-btn--green"
+          onClick={handleSubmit}
+          disabled={submitting || !text.trim()}
+        >
+          <span>{submitting ? 'SUBMITTING...' : 'SUBMIT CAPTION'}</span>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            send
+          </span>
+        </button>
+      </div>
+    </>
   )
 }

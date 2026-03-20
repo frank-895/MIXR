@@ -9,13 +9,15 @@ export function Leaderboard({ gameId }: { gameId: Id<'games'> }) {
 
   return (
     <div className="leaderboard">
-      <h2>Leaderboard</h2>
-      <ol>
+      <div className="leaderboard-title">LEADERBOARD</div>
+      <ol className="leaderboard-list">
         {scores.map((entry, i) => (
-          <li key={entry.playerId} className="leaderboard-entry">
-            <span className="rank">#{i + 1}</span>
-            <span className="name">{entry.name}</span>
-            <span className="score">{entry.totalScore}</span>
+          <li key={entry.playerId} className="leaderboard-row">
+            <div className="leaderboard-left">
+              <span className="leaderboard-rank">{i + 1}</span>
+              <span className="leaderboard-name">{entry.name}</span>
+            </div>
+            <span className="leaderboard-score">{entry.totalScore} PTS</span>
           </li>
         ))}
       </ol>

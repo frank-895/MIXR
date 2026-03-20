@@ -1,0 +1,580 @@
+<!-- Home/Lobby -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KNOW YOUR MEME - Home Lobby</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;800&amp;family=IBM+Plex+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f9e406",
+                        "background-light": "#ffffff",
+                        "background-dark": "#23210f",
+                        "brutal-black": "#000000",
+                        "accent-pink": "#FF00FF",
+                        "accent-green": "#00FF00"
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "mono": ["IBM Plex Mono", "monospace"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0px",
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "0px",
+                        "brutal": "0px"
+                    },
+                    boxShadow: {
+                        "brutal": "6px 6px 0px #000000",
+                        "brutal-focus": "8px 8px 0px #000000",
+                        "brutal-active": "0px 0px 0px #000000",
+                    },
+                    animation: {
+                        'marquee': 'marquee 25s linear infinite',
+                    },
+                    keyframes: {
+                        marquee: {
+                            '0%': { transform: 'translateX(100%)' },
+                            '100%': { transform: 'translateX(-100%)' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        /* Brutal Input Styles */
+        .brutal-input {
+            border: 4px solid #000000;
+            box-shadow: 6px 6px 0px #000000;
+            transition: all 0.15s ease-in-out;
+        }
+        
+        .brutal-input:focus {
+            outline: none;
+            box-shadow: 8px 8px 0px #000000;
+            transform: translate(-2px, -2px);
+            background-color: rgba(249, 228, 6, 0.1);
+        }
+
+        /* Brutal Button Styles */
+        .brutal-button {
+            border: 4px solid #000000;
+            box-shadow: 6px 6px 0px #000000;
+            transition: all 0.1s ease-in-out;
+            cursor: pointer;
+        }
+        
+        .brutal-button:active {
+            box-shadow: 0px 0px 0px #000000;
+            transform: translate(6px, 6px);
+        }
+        
+        /* Marquee wrapper to hide overflow */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            width: 100%;
+            border-top: 4px solid #000000;
+            border-bottom: 4px solid #000000;
+            background-color: #f9e406;
+            padding: 12px 0;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light text-brutal-black min-h-screen flex flex-col font-display overflow-x-hidden selection:bg-accent-pink selection:text-white">
+<!-- Main Content Area centered -->
+<main class="flex-grow flex flex-col items-center justify-center p-6 w-full max-w-[480px] mx-auto bg-white border-x-4 border-brutal-black relative shadow-brutal my-4 sm:my-8 z-10">
+<!-- Massive Title -->
+<div class="text-center w-full mb-12">
+<h1 class="text-[48px] sm:text-[56px] font-extrabold leading-[0.9] uppercase tracking-tighter" style="font-family: 'Space Grotesk', sans-serif;">
+                KNOW<br/>YOUR MEME
+            </h1>
+</div>
+<!-- Input Stack -->
+<div class="w-full flex flex-col gap-6 mb-10">
+<!-- Player Name Input -->
+<div class="flex flex-col relative group">
+<label class="sr-only" for="playerName">Player Name</label>
+<input autocomplete="off" class="brutal-input w-full h-[64px] bg-white text-brutal-black px-4 py-3 text-lg font-mono font-bold placeholder:text-gray-400 placeholder:font-mono uppercase focus:border-accent-pink" id="playerName" placeholder="PLAYER NAME" spellcheck="false" type="text"/>
+</div>
+<!-- Room Code Input -->
+<div class="flex flex-col relative">
+<label class="sr-only" for="roomCode">Room Code</label>
+<input autocomplete="off" class="brutal-input w-full h-[64px] bg-white text-brutal-black px-4 py-3 text-lg font-mono font-bold placeholder:text-gray-400 placeholder:font-mono uppercase focus:border-accent-green" id="roomCode" maxlength="6" placeholder="ROOM CODE" spellcheck="false" type="text"/>
+</div>
+</div>
+<!-- Join Button -->
+<button class="brutal-button w-full h-[72px] bg-primary text-brutal-black text-[24px] font-bold uppercase tracking-wide flex items-center justify-center gap-3 active:bg-accent-pink active:text-white group">
+<span>ENTER THE CHAT</span>
+<span aria-hidden="true" class="material-symbols-outlined text-[28px] group-active:text-white" data-icon="login">login</span>
+</button>
+<!-- Optional: Decorative element or 'Or create room' link -->
+<div class="mt-8 text-center">
+<a class="font-mono text-sm font-bold uppercase underline decoration-2 underline-offset-4 hover:text-accent-pink transition-colors" href="#">HOST A NEW GAME INSTEAD</a>
+</div>
+</main>
+<!-- Marquee Footer -->
+<footer class="mt-auto w-full fixed bottom-0 left-0 z-50 shadow-[0_-6px_0px_#000000]">
+<div class="marquee-container flex items-center">
+<div class="inline-block animate-marquee whitespace-nowrap font-mono font-bold text-lg uppercase tracking-wider">
+<span class="mx-4">*</span> BIGCHUNGUS <span class="mx-4">*</span> DATBOI <span class="mx-4">*</span> DOGE <span class="mx-4">*</span> PEPE <span class="mx-4">*</span> NYANCAT <span class="mx-4">*</span> TROLLFACE <span class="mx-4">*</span> HARAMBE <span class="mx-4">*</span> RICKASTLEY <span class="mx-4">*</span>
+<span class="mx-4">*</span> BIGCHUNGUS <span class="mx-4">*</span> DATBOI <span class="mx-4">*</span> DOGE <span class="mx-4">*</span> PEPE <span class="mx-4">*</span> NYANCAT <span class="mx-4">*</span> TROLLFACE <span class="mx-4">*</span> HARAMBE <span class="mx-4">*</span> RICKASTLEY <span class="mx-4">*</span>
+</div>
+</div>
+</footer>
+<!-- Spacer to prevent content hiding behind fixed marquee -->
+<div class="h-20 w-full"></div>
+</body></html>
+
+<!-- Caption Phase -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Meme Brutalism - Caption Phase</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=Space+Grotesk:wght@700;800&amp;family=Syne:wght@700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FFE800",
+                        "background-light": "#FFFFFF",
+                        "background-dark": "#000000",
+                        "accent-pink": "#FF00FF",
+                        "accent-green": "#00FF00",
+                        "muted": "#E0E0E0"
+                    },
+                    fontFamily: {
+                        "display": ["Syne", "sans-serif"],
+                        "body": ["IBM Plex Mono", "monospace"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0px",
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "0px"
+                    },
+                    boxShadow: {
+                        "hard": "6px 6px 0px #000000",
+                        "hard-focus": "8px 8px 0px #000000",
+                        "none": "0px 0px 0px #000000"
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        h1, h2, h3, h4, h5, h6, .font-heading {
+            font-family: 'Syne', sans-serif;
+        }
+        /* Custom styles for brutalist inputs to override default form plugin rings if needed */
+        .brutal-input:focus {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px #000000;
+        }
+        .brutal-btn:active {
+            transform: translate(6px, 6px);
+            box-shadow: 0px 0px 0px #000000;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-black dark:text-white min-h-screen flex flex-col items-center">
+<!-- Header / Top Bar -->
+<header class="w-full max-w-[480px] flex justify-between items-center p-4 border-b-4 border-black bg-white z-10 sticky top-0">
+<button aria-label="Go Back" class="brutal-btn w-12 h-12 flex items-center justify-center border-4 border-black bg-white shadow-hard active:shadow-none transition-all">
+<span class="material-symbols-outlined font-bold text-2xl" data-icon="arrow_back">arrow_back</span>
+</button>
+<div class="flex items-center gap-3 border-4 border-black bg-accent-pink px-4 py-2 shadow-hard">
+<span class="material-symbols-outlined text-white font-bold" data-icon="timer">timer</span>
+<span class="font-body font-bold text-white text-xl tracking-widest">00:45</span>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="w-full max-w-[480px] flex-1 flex flex-col p-4 gap-6 bg-white relative pb-24">
+<!-- Meme Container (1:1 Aspect Ratio) -->
+<div class="w-full aspect-square border-4 border-black shadow-hard bg-muted relative overflow-hidden group">
+<!-- Checkerboard Placeholder (simulated with CSS pattern or just a solid color for simplicity, using placeholder image here) -->
+<img alt="Blank meme template showing a confused cat" class="w-full h-full object-cover absolute inset-0 z-0" data-alt="Blank meme template showing a confused cat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfsH_uZizSgdsyKO_yeq39s9dVKuHPbFp4igcLLKpimRpXBrCQkDRpKoQFh3UdebVcT55sXFMQojA8h7-TV3s64O8SiWzBM0dRZ9Pea3cROG9pCCpvMbm7pPwtkbI5ZJjwEOIrwONm6p1Y-XMXJchGxBFPSfd1qpTJTeEpD_5PtkEkzcaiRk6XaBiHxipQZQI4Sa9dkmLvrqPbgiYammkpcgrKKDaLmp5B3Z_Eb69axU3mTlSa1ene2bdV0FtpPJ5VSqx4P0Wkd7I"/>
+<!-- Optional: Loading state overlay (hidden by default) -->
+<div class="hidden absolute inset-0 bg-white/80 z-10 flex items-center justify-center">
+<span class="font-heading font-bold text-2xl animate-pulse">LOADING...</span>
+</div>
+</div>
+<!-- Caption Input Area -->
+<div class="w-full flex flex-col gap-2 relative mt-4">
+<label class="sr-only" for="caption">Enter your meme caption</label>
+<textarea class="brutal-input w-full h-[120px] resize-none border-4 border-black bg-white p-4 font-body font-medium text-black text-lg shadow-hard focus:outline-none focus:ring-0 focus:bg-primary/10 transition-all placeholder:text-gray-500 uppercase" id="caption" placeholder="MAKE IT FUNNY..."></textarea>
+<!-- Character Counter -->
+<div class="absolute bottom-4 right-4 text-black font-body font-bold text-sm bg-primary px-2 py-1 border-2 border-black">
+<span>0</span>/140
+            </div>
+</div>
+</main>
+<!-- Bottom Fixed Action Area -->
+<div class="fixed bottom-0 w-full max-w-[480px] p-4 bg-white border-t-4 border-black z-20">
+<button class="brutal-btn w-full h-16 border-4 border-black bg-accent-green shadow-hard flex items-center justify-center gap-2 transition-all group">
+<span class="font-heading font-bold text-2xl text-black uppercase tracking-wider">Submit Caption</span>
+<span class="material-symbols-outlined font-bold text-black" data-icon="send">send</span>
+</button>
+</div>
+<!-- WAITING STATE OVERLAY (Hidden by default, shown after submit) -->
+<!-- To see it, remove 'hidden' class -->
+<div class="hidden fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-6 text-center">
+<div class="border-4 border-white p-8 max-w-[400px] w-full">
+<span class="material-symbols-outlined text-white text-6xl mb-6 animate-spin" data-icon="hourglass_empty">hourglass_empty</span>
+<h2 class="font-heading font-bold text-4xl text-white uppercase leading-tight tracking-widest">Waiting<br/>For<br/>Slowpokes...</h2>
+<p class="font-body text-white mt-6 animate-pulse">DO NOT CLOSE APP</p>
+</div>
+</div>
+</body></html>
+
+<!-- Voting Phase -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Voting Phase - Meme Brutalism</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;800&amp;family=Syne:wght@700;800&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FFE800",
+                        "background-light": "#FFFFFF",
+                        "background-dark": "#000000",
+                        "accent-pink": "#FF00FF",
+                        "accent-green": "#00FF00",
+                        "text-dark": "#000000",
+                        "muted": "#E0E0E0"
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "heading": ["Syne", "sans-serif"],
+                        "body": ["IBM Plex Mono", "monospace"]
+                    },
+                    borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+                    boxShadow: {
+                        'brutal': '6px 6px 0px #000000',
+                        'brutal-sm': '4px 4px 0px #000000',
+                        'brutal-hover': '8px 8px 0px #000000',
+                        'brutal-active': '0px 0px 0px #000000'
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        
+        /* Brutalist utility classes */
+        .border-brutal { border: 4px solid #000000; }
+        .shadow-brutal { box-shadow: 6px 6px 0px #000000; transition: all 0.1s ease; }
+        .shadow-brutal:active { box-shadow: 0px 0px 0px #000000; transform: translate(6px, 6px); }
+        
+        .stamp {
+            position: absolute;
+            top: 40px;
+            font-family: 'Syne', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 0.5rem 1rem;
+            border: 4px solid #000000;
+            box-shadow: 4px 4px 0px #000000;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transform: rotate(-15deg);
+        }
+        
+        .stamp.lmao {
+            right: 20px;
+            background-color: #FFE800;
+            color: #000000;
+            /* Simulating a swipe right state for demo */
+            /* opacity: 1; */
+        }
+        
+        .stamp.trash {
+            left: 20px;
+            background-color: #FFFFFF;
+            color: #000000;
+            transform: rotate(15deg);
+            /* Simulating a swipe left state for demo */
+            /* opacity: 1; */
+        }
+        
+        .impact-text {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: white;
+            text-shadow: 
+                -2px -2px 0 #000,  
+                 2px -2px 0 #000,
+                -2px  2px 0 #000,
+                 2px  2px 0 #000,
+                 0px  4px 0 #000;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light min-h-screen flex flex-col overflow-hidden relative">
+<!-- Minimal Header (Back-to-Main Exception) -->
+<header class="flex justify-between items-center p-4 border-b-4 border-black bg-white z-20">
+<button aria-label="Go back" class="w-10 h-10 border-brutal bg-white shadow-brutal flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl font-bold" data-icon="arrow_back">arrow_back</span>
+</button>
+<div class="font-body font-bold text-lg border-2 border-black px-4 py-1 bg-primary shadow-[4px_4px_0px_#000]">
+            JUDGE EM
+        </div>
+<div class="w-10"></div> <!-- Spacer -->
+</header>
+<!-- Progress Indicator -->
+<div class="flex flex-col gap-2 p-4 z-20 bg-white">
+<div class="flex justify-between items-center">
+<p class="font-body font-bold text-sm tracking-widest uppercase">3 / 10 MEMES</p>
+<div class="font-body text-xs bg-accent-pink text-white px-2 py-1 border-2 border-black font-bold">0:15</div>
+</div>
+<div class="h-4 border-2 border-black bg-muted w-full">
+<div class="h-full bg-accent-green border-r-2 border-black" style="width: 30%;"></div>
+</div>
+</div>
+<!-- Main Voting Area -->
+<main class="flex-1 relative flex flex-col items-center justify-center p-4 z-10 w-full max-w-md mx-auto h-full">
+<!-- The Meme Card (Swipeable Container) -->
+<div class="relative w-full aspect-[3/4] max-h-[530px] border-brutal bg-white shadow-brutal flex flex-col overflow-hidden mb-8 transform transition-transform duration-300">
+<!-- Stamps for visual feedback (hidden by default) -->
+<div class="stamp lmao">LMAO</div>
+<div class="stamp trash">TRASH</div>
+<!-- Meme Image -->
+<div class="relative w-full h-full bg-gray-200">
+<img alt="A dog looking intensely at the camera" class="w-full h-full object-cover filter grayscale contrast-125" data-alt="Funny dog meme base" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGBSURiThj3Mm_X326oMTYF3uTgN5r1tZxkYqH99n_PJyrEUCHMBa0948nwFRgNnlwaUlAIaO6AiHsgkg18CoTT9kCKDX3wbbsGO2U2eIccRplWWiagytHgVDFo283_eKKGIDtYnKz-kkPWbK6lju0ATk3_dlUo_ytvIc5yLfoON5y-2oDX8ytFT8_aYxgGVG-x4q4Trh89Fr1a96VJrQH5LwHPbLchy5t4YcfAX6MDyVtTZk27GpMRN6th2pUh26_Hf6fJJHyOeM"/>
+<!-- Overlay Caption -->
+<div class="absolute inset-0 flex flex-col justify-between p-6 pointer-events-none">
+<h2 class="impact-text text-4xl sm:text-5xl text-center leading-tight">WHEN YOU ACCIDENTALLY</h2>
+<h2 class="impact-text text-4xl sm:text-5xl text-center leading-tight">OPEN THE FRONT CAMERA</h2>
+</div>
+</div>
+<!-- Submitter Info (Optional, keeping it brutal) -->
+<div class="absolute bottom-0 left-0 w-full bg-white border-t-4 border-black p-2 flex justify-between items-center">
+<span class="font-body text-xs font-bold uppercase">Submitted by:</span>
+<span class="font-body text-sm font-bold bg-primary px-2 border-2 border-black">DANK_MASTER_99</span>
+</div>
+</div>
+<!-- Floating Action Buttons -->
+<div class="absolute bottom-8 left-0 w-full flex justify-center gap-8 px-8 z-30">
+<!-- Reject Button -->
+<button aria-label="Reject Meme" class="w-20 h-20 rounded-full border-brutal bg-white shadow-brutal flex items-center justify-center text-black">
+<span class="material-symbols-outlined text-5xl" data-icon="close">close</span>
+</button>
+<!-- Approve Button -->
+<button aria-label="Approve Meme" class="w-20 h-20 rounded-full border-brutal bg-primary shadow-brutal flex items-center justify-center text-black">
+<span class="material-symbols-outlined text-4xl" data-icon="favorite" data-weight="fill" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+</main>
+<!-- Decorative brutalist elements for larger screens -->
+<div class="hidden md:block absolute top-1/4 left-10 transform -rotate-12 opacity-20 pointer-events-none">
+<span class="font-heading text-8xl text-black">SWIPE</span>
+</div>
+<div class="hidden md:block absolute bottom-1/4 right-10 transform rotate-12 opacity-20 pointer-events-none">
+<span class="font-heading text-8xl text-black">JUDGE</span>
+</div>
+</body></html>
+
+<!-- Results -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Meme Brutalism - Results</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#FFE800",
+            "background-light": "#FFFFFF",
+            "background-dark": "#23210f",
+            "brutal-black": "#000000",
+            "brutal-pink": "#FF00FF",
+            "brutal-green": "#00FF00",
+            "brutal-muted": "#E0E0E0",
+          },
+          fontFamily: {
+            "display": ["Space Grotesk", "sans-serif"]
+          },
+          borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "0px"},
+          boxShadow: {
+            'brutal': '6px 6px 0px 0px rgba(0,0,0,1)',
+            'brutal-hover': '2px 2px 0px 0px rgba(0,0,0,1)',
+          },
+          borderWidth: {
+            '4': '4px',
+          },
+          keyframes: {
+            'brutal-bounce': {
+              '0%': { transform: 'translateY(-100%)', opacity: '0' },
+              '50%': { transform: 'translateY(10%)', opacity: '1' },
+              '75%': { transform: 'translateY(-5%)' },
+              '100%': { transform: 'translateY(0)' },
+            }
+          },
+          animation: {
+            'brutal-bounce': 'brutal-bounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-image: radial-gradient(#E0E0E0 2px, transparent 2px);
+      background-size: 24px 24px;
+      background-color: #FFFFFF;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 1;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light text-brutal-black min-h-screen flex justify-center">
+<div class="relative w-full max-w-md bg-white border-l-4 border-r-4 border-brutal-black flex flex-col min-h-screen pb-[100px] overflow-x-hidden shadow-2xl">
+<!-- Minimal Header (Focused View) -->
+<div class="flex items-center justify-between p-4 border-b-4 border-brutal-black bg-white z-10 sticky top-0">
+<h1 class="text-2xl font-extrabold uppercase tracking-tighter w-full text-center">RESULTS</h1>
+</div>
+<!-- Main Content -->
+<div class="p-6 flex flex-col gap-8 flex-1">
+<!-- Winner Podium (Animated) -->
+<div class="animate-brutal-bounce">
+<h2 class="text-4xl font-extrabold uppercase tracking-tighter text-center mb-4 leading-none">MEME<br/>CHAMPION</h2>
+<div class="border-4 border-brutal-black shadow-brutal bg-primary flex flex-col">
+<div class="w-full aspect-square border-b-4 border-brutal-black relative overflow-hidden bg-white group">
+<img alt="Cat wearing sunglasses looking cool" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS2_VfOvPpg_OeaspcfeNAF5OHce5dyf5D0pim-n_LwLbSV2-0fndWjPP_eKVsi8Wg7M_QmT21hQTIid3JqTVi8g5PX88scQlcge15VQLGInHdshq-9uUx-dzv-0ZDC5Y_HLC1gD8NZ9UUsRO5dbd8aKbfdM_4LQT8zJIoeJx_v3E3PPr9NvrTKAsvNQDD6hifC5MkGj1-awB3kb44qajLh5gYtNKrPqtTUYCv0rjT9Tu5mdzpmOXH6mMTJQFBLv7AJZzt8kMO5IA"/>
+<!-- Meme Caption Overlay -->
+<div class="absolute inset-0 flex flex-col justify-between p-4">
+<p class="text-white text-3xl font-extrabold uppercase text-center tracking-tight" style="-webkit-text-stroke: 2px black;">WHEN THE CSS</p>
+<p class="text-white text-3xl font-extrabold uppercase text-center tracking-tight" style="-webkit-text-stroke: 2px black;">ACTUALLY WORKS</p>
+</div>
+</div>
+<div class="p-4 flex items-center justify-between bg-primary">
+<div class="flex items-center gap-2">
+<span class="text-3xl">👑</span>
+<span class="text-2xl font-bold uppercase tracking-tight truncate max-w-[150px]">CHAD</span>
+</div>
+<div class="text-xl font-bold border-2 border-brutal-black bg-white px-3 py-1 shadow-[2px_2px_0px_#000]">
+                    5000 PTS
+                </div>
+</div>
+</div>
+</div>
+<!-- Leaderboard -->
+<div class="flex flex-col gap-3">
+<h3 class="text-xl font-bold uppercase tracking-tighter border-b-4 border-brutal-black pb-2">LOSERS BRACKET</h3>
+<!-- List Container -->
+<div class="border-4 border-brutal-black shadow-brutal flex flex-col bg-white">
+<!-- Row 2 -->
+<div class="flex items-center justify-between p-3 border-b-4 border-brutal-black bg-brutal-muted">
+<div class="flex items-center gap-4">
+<span class="font-extrabold text-xl w-6 text-center">2</span>
+<span class="font-bold text-lg uppercase truncate max-w-[120px]">BREAD_BOY</span>
+</div>
+<span class="font-bold text-lg">4200 PTS</span>
+</div>
+<!-- Row 3 -->
+<div class="flex items-center justify-between p-3 border-b-4 border-brutal-black bg-white">
+<div class="flex items-center gap-4">
+<span class="font-extrabold text-xl w-6 text-center">3</span>
+<span class="font-bold text-lg uppercase truncate max-w-[120px]">SAD_FROG</span>
+</div>
+<span class="font-bold text-lg">3850 PTS</span>
+</div>
+<!-- Row 4 -->
+<div class="flex items-center justify-between p-3 border-b-4 border-brutal-black bg-brutal-muted">
+<div class="flex items-center gap-4">
+<span class="font-extrabold text-xl w-6 text-center">4</span>
+<span class="font-bold text-lg uppercase truncate max-w-[120px]">DOGE_FAN</span>
+</div>
+<span class="font-bold text-lg">2100 PTS</span>
+</div>
+<!-- Row 5 -->
+<div class="flex items-center justify-between p-3 bg-white">
+<div class="flex items-center gap-4">
+<span class="font-extrabold text-xl w-6 text-center">5</span>
+<span class="font-bold text-lg uppercase truncate max-w-[120px]">SLOWPOKE</span>
+</div>
+<span class="font-bold text-lg">50 PTS</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom CTA -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md p-6 bg-transparent pointer-events-none z-20">
+<button class="w-full bg-brutal-pink border-4 border-brutal-black shadow-brutal text-brutal-black py-4 px-6 text-2xl font-extrabold uppercase tracking-tight pointer-events-auto active:translate-y-1 active:translate-x-1 active:shadow-brutal-hover transition-all flex items-center justify-center gap-2">
+            PLAY AGAIN <span class="material-symbols-outlined text-3xl" data-icon="replay">replay</span>
+</button>
+</div>
+</div>
+</body></html>
