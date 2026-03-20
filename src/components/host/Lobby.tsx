@@ -13,7 +13,10 @@ export function Lobby({
   const startGame = useMutation(api.games.startGame)
 
   const joinUrl = `${window.location.origin}?game=${gameCode}`
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(joinUrl)}`
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(joinUrl)}`
+
+  const playerCount = players?.length ?? 0
+  const canStart = playerCount >= 2
 
   return (
     <div className="host-shell">
@@ -21,56 +24,58 @@ export function Lobby({
         <h2 style={{ fontSize: 24, margin: 0 }}>GAME LOBBY</h2>
       </header>
 
-      <main className="screen center" style={{ paddingBottom: 24 }}>
-        <div className="game-code">
-          CODE
-          <strong>{gameCode}</strong>
-        </div>
-
+      <main className="lobby">
         <div className="qr-section">
-          <img
-            src={qrUrl}
-            alt="QR code to join game"
-            width={200}
-            height={200}
-          />
-          <p className="join-url">{joinUrl}</p>
+          <span className="qr-section__label">SCAN TO JOIN</span>
+          <div className="qr-section__frame">
+            <img
+              src={qrUrl}
+              alt="QR code to join game"
+              width={160}
+              height={160}
+            />
+          </div>
+          <span className="qr-section__code">{gameCode}</span>
         </div>
 
-        <div className="player-list" style={{ maxWidth: 400 }}>
-          <h3 style={{ marginBottom: 8 }}>PLAYERS ({players?.length ?? 0})</h3>
-          {players?.map((p: Doc<'players'>) => (
-            <div key={p._id} className="player-list-item">
-              {p.name}
+        <div className="lobby__players">
+          <h3 className="lobby__players-heading">
+            PLAYERS
+            <span className="lobby__player-count">{playerCount}</span>
+          </h3>
+
+          {playerCount === 0 ? (
+            <p className="lobby__empty animate-pulse">
+              WAITING FOR PLAYERS TO JOIN...
+            </p>
+          ) : (
+            <div className="player-chips">
+              {players?.map((p) => (
+                <div key={p._id} className="player-chip">
+                  {p.name}
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
 
-        <button
-          type="button"
-          className="brutal-btn brutal-btn--green"
-          style={{ maxWidth: 400 }}
-          onClick={() => startGame({ gameId: game._id })}
-          disabled={!players || players.length < 2}
-        >
-          <span>START GAME</span>
-          <span className="material-symbols-outlined" aria-hidden="true">
-            play_arrow
-          </span>
-        </button>
-
-        {players && players.length < 2 && (
-          <p
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 14,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-            }}
+        <div className="lobby__actions">
+          <button
+            type="button"
+            className="brutal-btn brutal-btn--green"
+            onClick={() => startGame({ gameId: game._id })}
+            disabled={!canStart}
           >
-            NEED AT LEAST 2 PLAYERS TO START
-          </p>
-        )}
+            <span>START GAME</span>
+            <span className="material-symbols-outlined" aria-hidden="true">
+              play_arrow
+            </span>
+          </button>
+
+          {!canStart && (
+            <p className="lobby__hint">NEED AT LEAST 2 PLAYERS TO START</p>
+          )}
+        </div>
       </main>
     </div>
   )

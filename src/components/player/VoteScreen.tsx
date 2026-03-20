@@ -46,18 +46,6 @@ export function VoteScreen({
 
   return (
     <>
-      {/* Header */}
-      <header className="brutal-header">
-        <div style={{ width: 48 }} />
-        <div
-          className="badge badge--primary"
-          style={{ fontFamily: 'var(--font-body)' }}
-        >
-          JUDGE EM
-        </div>
-        <div style={{ width: 48 }} />
-      </header>
-
       {/* Progress */}
       <div className="progress-section">
         <div className="progress-header">

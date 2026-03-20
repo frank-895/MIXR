@@ -532,23 +532,89 @@ p {
   box-shadow: 2px 2px 0px var(--black);
 }
 
-/* ===== PLAYER LIST ===== */
+/* ===== LOBBY LAYOUT ===== */
 
-.player-list {
-  width: 100%;
+.lobby {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 32px;
+  padding: 32px 24px;
+  width: 100%;
 }
 
-.player-list-item {
-  padding: 12px 16px;
-  border: var(--border);
+.lobby__players {
+  width: 100%;
+  max-width: 560px;
+}
+
+.lobby__players-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.lobby__player-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border: 3px solid var(--black);
+  background: var(--primary);
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.lobby__empty {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+  text-align: center;
+  padding: 24px 0;
+}
+
+.lobby__actions {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.lobby__hint {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===== PLAYER CHIPS ===== */
+
+.player-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.player-chip {
+  padding: 8px 16px;
+  border: 3px solid var(--black);
+  box-shadow: var(--shadow-sm);
   background: var(--white);
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 /* ===== QR SECTION ===== */
@@ -558,44 +624,39 @@ p {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 24px;
+}
+
+.qr-section__label {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.qr-section__frame {
+  background: var(--primary);
   border: var(--border);
   box-shadow: var(--shadow);
-  background: var(--white);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.qr-section img {
-  border: 2px solid var(--black);
-}
-
-.join-url {
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 500;
-  word-break: break-all;
-  text-align: center;
-}
-
-/* ===== GAME CODE ===== */
-
-.game-code {
-  font-family: var(--font-body);
-  font-size: 16px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.game-code strong {
-  font-size: 32px;
+.qr-section__frame img {
   display: block;
-  margin-top: 4px;
-  letter-spacing: 0.2em;
-  border: var(--border);
-  background: var(--primary);
-  padding: 8px 16px;
-  box-shadow: var(--shadow-sm);
-  text-align: center;
+  padding: 16px;
+  background-color: var(--white);
+}
+
+.qr-section__code {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #888;
 }
 
 /* ===== CHAR COUNTER ===== */
