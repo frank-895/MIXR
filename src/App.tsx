@@ -1,5 +1,5 @@
 import { useMutation } from 'convex/react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../convex/_generated/api'
 import { HostApp } from './components/host/HostApp'
 import { Marquee } from './components/Marquee'
@@ -62,23 +62,7 @@ function Landing({
       </div>
 
       <div className="form-stack">
-        <div>
-          <label className="sr-only" htmlFor="rounds">
-            Number of rounds
-          </label>
-          <select
-            id="rounds"
-            className="brutal-select"
-            value={rounds}
-            onChange={(e) => setRounds(Number(e.target.value))}
-          >
-            {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-              <option key={n} value={n}>
-                {n} {n === 1 ? 'ROUND' : 'ROUNDS'}
-              </option>
-            ))}
-          </select>
-        </div>
+        <RoundsPicker value={rounds} onChange={setRounds} />
       </div>
 
       <button
@@ -93,6 +77,68 @@ function Landing({
         </span>
       </button>
     </main>
+  )
+}
+
+function RoundsPicker({
+  value,
+  onChange,
+}: { value: number; onChange: (n: number) => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const options = Array.from({ length: 10 }, (_, i) => i + 1)
+
+  return (
+    <div className="rounds-picker" ref={ref}>
+      <button
+        type="button"
+        className="rounds-picker__trigger"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <span>
+          {value} {value === 1 ? 'ROUND' : 'ROUNDS'}
+        </span>
+        <span
+          className={`material-symbols-outlined rounds-picker__chevron ${open ? 'rounds-picker__chevron--open' : ''}`}
+          aria-hidden="true"
+        >
+          expand_more
+        </span>
+      </button>
+      {open && (
+        <ul className="rounds-picker__menu" role="listbox">
+          {options.map((n) => (
+            <li key={n}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={n === value}
+                className={`rounds-picker__option ${n === value ? 'rounds-picker__option--active' : ''}`}
+                onClick={() => {
+                  onChange(n)
+                  setOpen(false)
+                }}
+              >
+                {n} {n === 1 ? 'ROUND' : 'ROUNDS'}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 
