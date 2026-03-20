@@ -9,7 +9,10 @@ export function FinalResults({ game }: { game: Doc<'games'> }) {
     return (
       <div className="host-shell">
         <main className="screen center">
-          <span className="material-symbols-outlined animate-spin" style={{ fontSize: 48 }}>
+          <span
+            className="material-symbols-outlined animate-spin"
+            style={{ fontSize: 48 }}
+          >
             hourglass_empty
           </span>
           <h2>LOADING RESULTS...</h2>
@@ -26,7 +29,18 @@ export function FinalResults({ game }: { game: Doc<'games'> }) {
         <h2 style={{ fontSize: 24, margin: 0 }}>RESULTS</h2>
       </header>
 
-      <main style={{ flex: 1, padding: 24, display: 'flex', flexDirection: 'column', gap: 32, maxWidth: 500, margin: '0 auto', width: '100%' }}>
+      <main
+        style={{
+          flex: 1,
+          padding: 24,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 32,
+          maxWidth: 500,
+          margin: '0 auto',
+          width: '100%',
+        }}
+      >
         {/* Winner */}
         {winner && (
           <div>
@@ -58,7 +72,9 @@ export function FinalResults({ game }: { game: Doc<'games'> }) {
                     <span className="leaderboard-rank">{i + 2}</span>
                     <span className="leaderboard-name">{entry.name}</span>
                   </div>
-                  <span className="leaderboard-score">{entry.totalScore} PTS</span>
+                  <span className="leaderboard-score">
+                    {entry.totalScore} PTS
+                  </span>
                 </li>
               ))}
             </ol>

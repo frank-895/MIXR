@@ -10,7 +10,7 @@ export function VoteScreen({
 }: {
   round: Doc<'rounds'>
   playerId: Id<'players'>
-  game: { currentRound: number; totalRounds: number }
+  game: Doc<'games'>
 }) {
   const candidates = useQuery(api.votes.getCandidates, {
     playerId,
@@ -24,7 +24,8 @@ export function VoteScreen({
   const seconds = useCountdown(round.voteEndsAt)
 
   const current = candidates?.[0]
-  const totalCaptions = allCaptions?.filter((c) => c.userId !== playerId).length ?? 0
+  const totalCaptions =
+    allCaptions?.filter((c) => c.userId !== playerId).length ?? 0
   const votedCount = totalCaptions - (candidates?.length ?? 0)
   const progressPct = totalCaptions > 0 ? (votedCount / totalCaptions) * 100 : 0
 
@@ -48,7 +49,10 @@ export function VoteScreen({
       {/* Header */}
       <header className="brutal-header">
         <div style={{ width: 48 }} />
-        <div className="badge badge--primary" style={{ fontFamily: 'var(--font-body)' }}>
+        <div
+          className="badge badge--primary"
+          style={{ fontFamily: 'var(--font-body)' }}
+        >
           JUDGE EM
         </div>
         <div style={{ width: 48 }} />
@@ -71,11 +75,24 @@ export function VoteScreen({
       </div>
 
       {/* Main */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 16, position: 'relative' }}>
+      <main
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 16,
+          position: 'relative',
+        }}
+      >
         {current ? (
           <>
             {/* Meme Card */}
-            <div className="meme-frame meme-frame--tall" style={{ maxHeight: 530, marginBottom: 32 }}>
+            <div
+              className="meme-frame meme-frame--tall"
+              style={{ maxHeight: 530, marginBottom: 32 }}
+            >
               <img
                 src={round.imageUrl}
                 alt="Meme template"
@@ -123,7 +140,10 @@ export function VoteScreen({
             </div>
           </>
         ) : (
-          <div className="brutal-card" style={{ padding: 32, textAlign: 'center' }}>
+          <div
+            className="brutal-card"
+            style={{ padding: 32, textAlign: 'center' }}
+          >
             <span
               className="material-symbols-outlined animate-spin"
               aria-hidden="true"
@@ -132,7 +152,7 @@ export function VoteScreen({
               hourglass_empty
             </span>
             <h2>NO MORE MEMES</h2>
-            <p style={{ marginTop: 8 }}>WAITING FOR ROUND TO END...</p>
+            <p style={{ marginTop: 8 }}>WAITING FOR NEW CAPTIONS...</p>
           </div>
         )}
       </main>

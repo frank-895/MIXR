@@ -78,12 +78,12 @@ export const startGame = mutation({
       roundNumber: 1,
       imageUrl,
       state: 'caption',
-      captionEndsAt: now + 60_000,
+      captionEndsAt: now + 30_000,
       voteEndsAt: 0,
     })
 
     await ctx.scheduler.runAfter(
-      60_000,
+      30_000,
       internal.internal.roundTransitions.endCaptionPhase,
       { roundId }
     )

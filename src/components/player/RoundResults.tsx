@@ -11,10 +11,12 @@ export function RoundResults({
   playerId: Id<'players'>
   game: { currentRound: number; totalRounds: number }
 }) {
-  const caption = useQuery(api.captions.getPlayerCaption, {
+  const captions = useQuery(api.captions.getPlayerCaptions, {
     playerId,
     roundId: round._id,
   })
+
+  const totalScore = (captions ?? []).reduce((sum, c) => sum + c.score, 0)
 
   return (
     <main className="screen center">
@@ -23,7 +25,7 @@ export function RoundResults({
       </h2>
       <h1 style={{ fontSize: 36 }}>COMPLETE</h1>
 
-      {caption ? (
+      {captions && captions.length > 0 ? (
         <div className="brutal-card" style={{ padding: 24, width: '100%' }}>
           <p
             style={{
@@ -34,19 +36,24 @@ export function RoundResults({
               marginBottom: 8,
             }}
           >
-            YOUR CAPTION:
+            YOUR CAPTIONS ({captions.length}):
           </p>
-          <p
-            style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 24,
-              fontWeight: 800,
-              textTransform: 'uppercase',
-              marginBottom: 16,
-            }}
-          >
-            "{caption.text}"
-          </p>
+          {captions.map((c) => (
+            <p
+              key={c._id}
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: 14,
+                fontWeight: 500,
+                textTransform: 'uppercase',
+                marginBottom: 8,
+                border: '2px solid var(--black)',
+                padding: '8px 12px',
+              }}
+            >
+              "{c.text}" — {c.score} PTS
+            </p>
+          ))}
           <div
             style={{
               fontFamily: 'var(--font-body)',
@@ -57,20 +64,35 @@ export function RoundResults({
               padding: '4px 12px',
               display: 'inline-block',
               boxShadow: '2px 2px 0px #000',
+              marginTop: 8,
             }}
           >
-            {caption.score} PTS
+            TOTAL: {totalScore} PTS
           </div>
         </div>
       ) : (
         <div className="brutal-card" style={{ padding: 24, width: '100%' }}>
-          <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, textTransform: 'uppercase' }}>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+            }}
+          >
             YOU DIDN'T SUBMIT A CAPTION THIS ROUND.
           </p>
         </div>
       )}
 
-      <p className="animate-pulse" style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 700, textTransform: 'uppercase' }}>
+      <p
+        className="animate-pulse"
+        style={{
+          fontFamily: 'var(--font-body)',
+          fontSize: 14,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+        }}
+      >
         NEXT ROUND STARTING SOON...
       </p>
     </main>

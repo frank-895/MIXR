@@ -1,29 +1,58 @@
 import { useMutation, useQuery } from 'convex/react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { Doc, Id } from '../../../convex/_generated/dataModel'
 import { useCountdown } from '../../lib/useCountdown'
+
+const COOLDOWN_SECONDS = 5
 
 export function CaptionScreen({
   round,
   playerId,
   game: _game,
+  deadline,
 }: {
   round: Doc<'rounds'>
   playerId: Id<'players'>
-  game: { currentRound: number; totalRounds: number }
+  game: Doc<'games'>
+  deadline?: number
 }) {
   const submitCaption = useMutation(api.captions.submit)
-  const existing = useQuery(api.captions.getPlayerCaption, {
+  const myCaptions = useQuery(api.captions.getPlayerCaptions, {
     playerId,
     roundId: round._id,
   })
-  const seconds = useCountdown(round.captionEndsAt)
+  const timerTarget = deadline ?? round.captionEndsAt
+  const seconds = useCountdown(timerTarget)
   const [text, setText] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [cooldownEnd, setCooldownEnd] = useState(0)
+  const [cooldownLeft, setCooldownLeft] = useState(0)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    textareaRef.current?.focus()
+  }, [])
+
+  // Cooldown ticker
+  useEffect(() => {
+    if (cooldownEnd <= 0) return
+    const interval = setInterval(() => {
+      const remaining = Math.max(
+        0,
+        Math.ceil((cooldownEnd - Date.now()) / 1000)
+      )
+      setCooldownLeft(remaining)
+      if (remaining <= 0) {
+        setCooldownEnd(0)
+        clearInterval(interval)
+      }
+    }, 200)
+    return () => clearInterval(interval)
+  }, [cooldownEnd])
 
   const handleSubmit = async () => {
-    if (!text.trim()) return
+    if (!text.trim() || submitting || cooldownLeft > 0) return
     setSubmitting(true)
     try {
       await submitCaption({
@@ -31,41 +60,20 @@ export function CaptionScreen({
         roundId: round._id,
         text: text.trim(),
       })
+      setText('')
+      setCooldownEnd(Date.now() + COOLDOWN_SECONDS * 1000)
+      setCooldownLeft(COOLDOWN_SECONDS)
     } catch {
+      // Submission may have failed due to cooldown or phase end
+    } finally {
       setSubmitting(false)
     }
   }
 
   const formatted = String(seconds).padStart(2, '0')
-
-  // Waiting overlay after submission
-  if (existing) {
-    return (
-      <>
-        <div className="waiting-overlay">
-          <div className="waiting-overlay-box">
-            <span
-              className="material-symbols-outlined animate-spin"
-              aria-hidden="true"
-              style={{ fontSize: 64, marginBottom: 24, display: 'block', color: 'white' }}
-            >
-              hourglass_empty
-            </span>
-            <h2>
-              WAITING
-              <br />
-              FOR
-              <br />
-              SLOWPOKES...
-            </h2>
-            <p className="animate-pulse" style={{ marginTop: 24 }}>
-              DO NOT CLOSE APP
-            </p>
-          </div>
-        </div>
-      </>
-    )
-  }
+  const sortedCaptions = [...(myCaptions ?? [])].sort(
+    (a, b) => b.createdAt - a.createdAt
+  )
 
   return (
     <>
@@ -79,7 +87,17 @@ export function CaptionScreen({
       </header>
 
       {/* Main */}
-      <main style={{ flex: 1, padding: 16, display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 120 }}>
+      <main
+        style={{
+          flex: 1,
+          padding: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 24,
+          paddingBottom: 120,
+          overflowY: 'auto',
+        }}
+      >
         {/* Meme Image */}
         <div className="meme-frame">
           <img src={round.imageUrl} alt="Meme template" />
@@ -91,6 +109,7 @@ export function CaptionScreen({
             Enter your meme caption
           </label>
           <textarea
+            ref={textareaRef}
             id="caption"
             className="brutal-textarea"
             placeholder="MAKE IT FUNNY..."
@@ -102,6 +121,42 @@ export function CaptionScreen({
             <span>{text.length}</span>/140
           </div>
         </div>
+
+        {/* Submitted Captions */}
+        {sortedCaptions.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <p
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: 12,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+              }}
+            >
+              YOUR CAPTIONS ({sortedCaptions.length})
+            </p>
+            {sortedCaptions.map((c) => (
+              <div
+                key={c._id}
+                style={{
+                  border: '2px solid var(--black)',
+                  padding: '8px 12px',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  textTransform: 'uppercase',
+                  background: 'var(--white)',
+                }}
+              >
+                "{c.text}"
+                <span style={{ float: 'right', fontWeight: 700 }}>
+                  {c.score > 0 ? '+' : ''}
+                  {c.score} PTS
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
 
       {/* Fixed Bottom Button */}
@@ -110,11 +165,17 @@ export function CaptionScreen({
           type="button"
           className="brutal-btn brutal-btn--green"
           onClick={handleSubmit}
-          disabled={submitting || !text.trim()}
+          disabled={submitting || !text.trim() || cooldownLeft > 0}
         >
-          <span>{submitting ? 'SUBMITTING...' : 'SUBMIT CAPTION'}</span>
+          <span>
+            {cooldownLeft > 0
+              ? `WAIT ${cooldownLeft}S...`
+              : submitting
+                ? 'SUBMITTING...'
+                : 'SUBMIT CAPTION'}
+          </span>
           <span className="material-symbols-outlined" aria-hidden="true">
-            send
+            {cooldownLeft > 0 ? 'hourglass_empty' : 'send'}
           </span>
         </button>
       </div>

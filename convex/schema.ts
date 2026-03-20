@@ -29,6 +29,7 @@ export default defineSchema({
     text: v.string(),
     score: v.number(),
     exposureCount: v.number(),
+    createdAt: v.number(),
   })
     .index('by_roundId', ['roundId'])
     .index('by_userId_and_roundId', ['userId', 'roundId']),

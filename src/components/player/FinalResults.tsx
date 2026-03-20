@@ -14,7 +14,10 @@ export function FinalResults({
   if (!scores) {
     return (
       <main className="screen center">
-        <span className="material-symbols-outlined animate-spin" style={{ fontSize: 48 }}>
+        <span
+          className="material-symbols-outlined animate-spin"
+          style={{ fontSize: 48 }}
+        >
           hourglass_empty
         </span>
         <h2>LOADING...</h2>
@@ -33,7 +36,16 @@ export function FinalResults({
         <h2 style={{ fontSize: 24, margin: 0 }}>RESULTS</h2>
       </header>
 
-      <main style={{ flex: 1, padding: 24, display: 'flex', flexDirection: 'column', gap: 32, paddingBottom: 120 }}>
+      <main
+        style={{
+          flex: 1,
+          padding: 24,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 32,
+          paddingBottom: 120,
+        }}
+      >
         {/* Your Rank */}
         {myScore && (
           <div className="text-center">
@@ -102,7 +114,9 @@ export function FinalResults({
                     {entry.playerId === playerId ? ' (YOU)' : ''}
                   </span>
                 </div>
-                <span className="leaderboard-score">{entry.totalScore} PTS</span>
+                <span className="leaderboard-score">
+                  {entry.totalScore} PTS
+                </span>
               </li>
             ))}
           </ol>

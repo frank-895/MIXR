@@ -92,7 +92,9 @@ export function JoinScreen({
       </button>
 
       {error && (
-        <p style={{ color: 'red', fontWeight: 700, textTransform: 'uppercase' }}>
+        <p
+          style={{ color: 'red', fontWeight: 700, textTransform: 'uppercase' }}
+        >
           {error}
         </p>
       )}

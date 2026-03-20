@@ -56,7 +56,7 @@ export const castVote = mutation({
 
     const round = await ctx.db.get(caption.roundId)
     if (!round) throw new Error('Round not found')
-    if (round.state !== 'vote') throw new Error('Not in vote phase')
+    if (round.state !== 'open') throw new Error('Not in voting phase')
     if (Date.now() > round.voteEndsAt) throw new Error('Vote phase ended')
 
     // Check uniqueness

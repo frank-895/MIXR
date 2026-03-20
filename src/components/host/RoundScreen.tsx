@@ -11,7 +11,10 @@ export function RoundScreen({ game }: { game: Doc<'games'> }) {
     return (
       <div className="host-shell">
         <main className="screen center">
-          <span className="material-symbols-outlined animate-spin" style={{ fontSize: 48 }}>
+          <span
+            className="material-symbols-outlined animate-spin"
+            style={{ fontSize: 48 }}
+          >
             hourglass_empty
           </span>
           <h2>LOADING ROUND...</h2>
@@ -41,8 +44,8 @@ export function RoundScreen({ game }: { game: Doc<'games'> }) {
         >
           {round.state === 'caption'
             ? 'CAPTIONING...'
-            : round.state === 'vote'
-              ? 'VOTING...'
+            : round.state === 'open'
+              ? 'CAPTION + VOTE'
               : 'ROUND COMPLETE'}
         </div>
         {round.state !== 'finished' && <Timer targetTime={targetTime} />}

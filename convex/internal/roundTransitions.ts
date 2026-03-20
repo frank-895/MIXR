@@ -11,23 +11,23 @@ export const endCaptionPhase = internalMutation({
 
     const now = Date.now()
     await ctx.db.patch(args.roundId, {
-      state: 'vote',
-      voteEndsAt: now + 60_000,
+      state: 'open',
+      voteEndsAt: now + 90_000,
     })
 
     await ctx.scheduler.runAfter(
-      60_000,
-      internal.internal.roundTransitions.endVotePhase,
+      90_000,
+      internal.internal.roundTransitions.endOpenPhase,
       { roundId: args.roundId }
     )
   },
 })
 
-export const endVotePhase = internalMutation({
+export const endOpenPhase = internalMutation({
   args: { roundId: v.id('rounds') },
   handler: async (ctx, args) => {
     const round = await ctx.db.get(args.roundId)
-    if (!round || round.state !== 'vote') return
+    if (!round || round.state !== 'open') return
 
     await ctx.db.patch(args.roundId, { state: 'finished' })
 
@@ -46,12 +46,12 @@ export const endVotePhase = internalMutation({
         roundNumber: nextRoundNumber,
         imageUrl,
         state: 'caption',
-        captionEndsAt: now + 60_000,
+        captionEndsAt: now + 30_000,
         voteEndsAt: 0,
       })
 
       await ctx.scheduler.runAfter(
-        60_000,
+        30_000,
         internal.internal.roundTransitions.endCaptionPhase,
         { roundId: nextRoundId }
       )

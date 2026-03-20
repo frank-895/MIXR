@@ -36,7 +36,9 @@ function App() {
 
 function Landing({
   navigate,
-}: { navigate: (params: Record<string, string>) => void }) {
+}: {
+  navigate: (params: Record<string, string>) => void
+}) {
   const createGame = useMutation(api.games.createGame)
   const [rounds, setRounds] = useState(3)
   const [creating, setCreating] = useState(false)
@@ -83,7 +85,10 @@ function Landing({
 function RoundsPicker({
   value,
   onChange,
-}: { value: number; onChange: (n: number) => void }) {
+}: {
+  value: number
+  onChange: (n: number) => void
+}) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 

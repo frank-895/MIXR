@@ -1,16 +1,16 @@
 /* ===== BRUTALIST DESIGN SYSTEM ===== */
 
 :root {
-  --primary: #FFE800;
+  --primary: #ffe800;
   --black: #000000;
-  --white: #FFFFFF;
-  --pink: #FF00FF;
-  --green: #00FF00;
-  --muted: #E0E0E0;
+  --white: #ffffff;
+  --pink: #ff00ff;
+  --green: #00ff00;
+  --muted: #e0e0e0;
 
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'IBM Plex Mono', monospace;
-  --font-heading: 'Syne', sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "IBM Plex Mono", monospace;
+  --font-heading: "Syne", sans-serif;
 
   --border: 4px solid var(--black);
   --shadow: 6px 6px 0px var(--black);
@@ -74,7 +74,9 @@ body {
 
 /* ===== TYPOGRAPHY ===== */
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   font-family: var(--font-heading);
   font-weight: 800;
   text-transform: uppercase;
@@ -313,10 +315,10 @@ p {
   color: white;
   text-shadow:
     -2px -2px 0 #000,
-     2px -2px 0 #000,
-    -2px  2px 0 #000,
-     2px  2px 0 #000,
-     0px  4px 0 #000;
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0px 4px 0 #000;
   font-size: 32px;
   line-height: 1;
   text-align: center;
@@ -705,8 +707,12 @@ p {
 }
 
 @keyframes marquee {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }
 
 /* ===== FIXED BOTTOM ACTION ===== */
@@ -792,31 +798,66 @@ p {
   text-align: center;
 }
 
-.gap-sm { gap: 8px; }
-.gap-md { gap: 16px; }
-.gap-lg { gap: 24px; }
-.gap-xl { gap: 32px; }
+.gap-sm {
+  gap: 8px;
+}
+.gap-md {
+  gap: 16px;
+}
+.gap-lg {
+  gap: 24px;
+}
+.gap-xl {
+  gap: 32px;
+}
 
-.mt-auto { margin-top: auto; }
-.mb-8 { margin-bottom: 32px; }
-.mb-4 { margin-bottom: 16px; }
-.mt-8 { margin-top: 32px; }
+.mt-auto {
+  margin-top: auto;
+}
+.mb-8 {
+  margin-bottom: 32px;
+}
+.mb-4 {
+  margin-bottom: 16px;
+}
+.mt-8 {
+  margin-top: 32px;
+}
 
-.font-body { font-family: var(--font-body); }
-.font-heading { font-family: var(--font-heading); }
+.font-body {
+  font-family: var(--font-body);
+}
+.font-heading {
+  font-family: var(--font-heading);
+}
 
-.uppercase { text-transform: uppercase; }
-.bold { font-weight: 700; }
-.extrabold { font-weight: 800; }
+.uppercase {
+  text-transform: uppercase;
+}
+.bold {
+  font-weight: 700;
+}
+.extrabold {
+  font-weight: 800;
+}
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .animate-spin {

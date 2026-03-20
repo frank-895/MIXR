@@ -5,8 +5,8 @@ import { usePlayerId } from '../../lib/usePlayerId'
 import { CaptionScreen } from './CaptionScreen'
 import { FinalResults } from './FinalResults'
 import { JoinScreen } from './JoinScreen'
+import { OpenPhaseScreen } from './OpenPhaseScreen'
 import { RoundResults } from './RoundResults'
-import { VoteScreen } from './VoteScreen'
 import { WaitingScreen } from './WaitingScreen'
 
 export function PlayerApp({ gameCode }: { gameCode: string }) {
@@ -59,8 +59,8 @@ function ActiveRound({
     return <CaptionScreen round={round} playerId={playerId} game={game} />
   }
 
-  if (round.state === 'vote') {
-    return <VoteScreen round={round} playerId={playerId} game={game} />
+  if (round.state === 'open') {
+    return <OpenPhaseScreen round={round} playerId={playerId} game={game} />
   }
 
   return <RoundResults round={round} playerId={playerId} game={game} />

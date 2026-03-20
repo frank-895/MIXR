@@ -11,7 +11,10 @@ export function HostApp({ gameCode }: { gameCode: string }) {
     return (
       <div className="host-shell">
         <main className="screen center">
-          <span className="material-symbols-outlined animate-spin" style={{ fontSize: 48 }}>
+          <span
+            className="material-symbols-outlined animate-spin"
+            style={{ fontSize: 48 }}
+          >
             hourglass_empty
           </span>
           <h2>LOADING...</h2>

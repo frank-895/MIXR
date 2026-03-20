@@ -7,7 +7,10 @@ export function WaitingScreen({ gameId }: { gameId: Id<'games'> }) {
 
   return (
     <main className="screen center">
-      <div className="waiting-overlay-box" style={{ border: '4px solid #000', padding: 32 }}>
+      <div
+        className="waiting-overlay-box"
+        style={{ border: '4px solid #000', padding: 32 }}
+      >
         <span
           className="material-symbols-outlined animate-spin"
           aria-hidden="true"

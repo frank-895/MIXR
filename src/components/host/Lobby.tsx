@@ -28,7 +28,12 @@ export function Lobby({
         </div>
 
         <div className="qr-section">
-          <img src={qrUrl} alt="QR code to join game" width={200} height={200} />
+          <img
+            src={qrUrl}
+            alt="QR code to join game"
+            width={200}
+            height={200}
+          />
           <p className="join-url">{joinUrl}</p>
         </div>
 
@@ -55,7 +60,14 @@ export function Lobby({
         </button>
 
         {players && players.length < 2 && (
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 700, textTransform: 'uppercase' }}>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 14,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+            }}
+          >
             NEED AT LEAST 2 PLAYERS TO START
           </p>
         )}
