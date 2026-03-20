@@ -124,24 +124,23 @@ function RoundsPicker({
         </span>
       </button>
       {open && (
-        <ul className="rounds-picker__menu" role="listbox">
+        <div className="rounds-picker__menu" role="listbox">
           {options.map((n) => (
-            <li key={n}>
-              <button
-                type="button"
-                role="option"
-                aria-selected={n === value}
-                className={`rounds-picker__option ${n === value ? 'rounds-picker__option--active' : ''}`}
-                onClick={() => {
-                  onChange(n)
-                  setOpen(false)
-                }}
-              >
-                {n} {n === 1 ? 'ROUND' : 'ROUNDS'}
-              </button>
-            </li>
+            <button
+              key={n}
+              type="button"
+              role="option"
+              aria-selected={n === value}
+              className={`rounds-picker__option ${n === value ? 'rounds-picker__option--active' : ''}`}
+              onClick={() => {
+                onChange(n)
+                setOpen(false)
+              }}
+            >
+              {n} {n === 1 ? 'ROUND' : 'ROUNDS'}
+            </button>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   )
