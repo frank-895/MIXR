@@ -1,9 +1,8 @@
 import { v } from 'convex/values'
 import { internal } from './_generated/api'
 import { mutation, query } from './_generated/server'
+import { CAPTION_SUBMISSION_COOLDOWN_MS } from './constants'
 import { MAX_CAPTION_LENGTH, normalizeCaptionText } from './input'
-
-const COOLDOWN_MS = 5_000
 
 export const submit = mutation({
   args: {
@@ -55,7 +54,10 @@ export const submit = mutation({
           ? a
           : b
       )
-      if (now - (latest.createdAt ?? latest._creationTime) < COOLDOWN_MS) {
+      if (
+        now - (latest.createdAt ?? latest._creationTime) <
+        CAPTION_SUBMISSION_COOLDOWN_MS
+      ) {
         throw new Error('SLOW DOWN A SEC')
       }
     }

@@ -1,8 +1,12 @@
 import { v } from 'convex/values'
 import { internal } from '../_generated/api'
 import { internalMutation } from '../_generated/server'
+import {
+  CAPTION_PHASE_DURATION_MS,
+  GAME_RETENTION_MS,
+  OPEN_PHASE_DURATION_MS,
+} from '../constants'
 import { MEME_IMAGES } from '../seed'
-import { GAME_RETENTION_MS } from './gameCleanup'
 
 export const endCaptionPhase = internalMutation({
   args: { roundId: v.id('rounds') },
@@ -17,12 +21,12 @@ export const endCaptionPhase = internalMutation({
     const now = Date.now()
     await ctx.db.patch(args.roundId, {
       state: 'open',
-      voteEndsAt: now + 90_000,
+      voteEndsAt: now + OPEN_PHASE_DURATION_MS,
       scheduledEndCaptionJobId: undefined,
     })
 
     const scheduledEndOpenJobId = await ctx.scheduler.runAfter(
-      90_000,
+      OPEN_PHASE_DURATION_MS,
       internal.internal.roundTransitions.endOpenPhase,
       { roundId: args.roundId }
     )
@@ -63,12 +67,12 @@ export const endOpenPhase = internalMutation({
         roundNumber: nextRoundNumber,
         imageUrl,
         state: 'caption',
-        captionEndsAt: now + 30_000,
+        captionEndsAt: now + CAPTION_PHASE_DURATION_MS,
         voteEndsAt: 0,
       })
 
       const scheduledEndCaptionJobId = await ctx.scheduler.runAfter(
-        30_000,
+        CAPTION_PHASE_DURATION_MS,
         internal.internal.roundTransitions.endCaptionPhase,
         { roundId: nextRoundId }
       )

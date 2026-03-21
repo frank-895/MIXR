@@ -1,6 +1,7 @@
 import { v } from 'convex/values'
 import { internal } from './_generated/api'
 import { mutation, query } from './_generated/server'
+import { CAPTION_PHASE_DURATION_MS } from './constants'
 import {
   isValidGameCode,
   MIN_PLAYERS_TO_START,
@@ -134,12 +135,12 @@ export const startGame = mutation({
       roundNumber: 1,
       imageUrl,
       state: 'caption',
-      captionEndsAt: now + 30_000,
+      captionEndsAt: now + CAPTION_PHASE_DURATION_MS,
       voteEndsAt: 0,
     })
 
     const scheduledEndCaptionJobId = await ctx.scheduler.runAfter(
-      30_000,
+      CAPTION_PHASE_DURATION_MS,
       internal.internal.roundTransitions.endCaptionPhase,
       { roundId }
     )

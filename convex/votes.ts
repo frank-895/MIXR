@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 import { internal } from './_generated/api'
 import type { Doc, Id } from './_generated/dataModel'
 import { mutation, type QueryCtx, query } from './_generated/server'
-import { VOTE_COOLDOWN_MS } from './input'
+import { VOTE_COOLDOWN_MS } from './constants'
 
 type CandidateGroup = {
   semanticKeyCaptionId: Id<'captions'>

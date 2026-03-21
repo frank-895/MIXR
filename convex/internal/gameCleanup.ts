@@ -2,8 +2,8 @@ import { v } from 'convex/values'
 import { internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
 import { internalMutation, type MutationCtx } from '../_generated/server'
+import { GAME_RETENTION_MS } from '../constants'
 
-export const GAME_RETENTION_MS = 10 * 60 * 1000
 const CAPTION_BATCH_SIZE = 200
 const VOTE_BATCH_SIZE = 200
 const PLAYER_BATCH_SIZE = 100

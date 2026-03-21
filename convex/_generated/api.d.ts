@@ -10,6 +10,7 @@
 
 import type * as captionText from "../captionText.js";
 import type * as captions from "../captions.js";
+import type * as constants from "../constants.js";
 import type * as games from "../games.js";
 import type * as input from "../input.js";
 import type * as internal_captionDedupe from "../internal/captionDedupe.js";
@@ -30,6 +31,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   captionText: typeof captionText;
   captions: typeof captions;
+  constants: typeof constants;
   games: typeof games;
   input: typeof input;
   "internal/captionDedupe": typeof internal_captionDedupe;
