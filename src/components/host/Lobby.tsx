@@ -31,26 +31,22 @@ export function Lobby({
       <main className="lobby">
         <div className="qr-section">
           <span className="qr-section__label">SCAN TO JOIN</span>
-          <div className="qr-section__frame">
+          <div className="qr-section__card">
             <img
               src={qrUrl}
               alt="QR code to join game"
               width={160}
               height={160}
             />
+            <div className="qr-section__divider" />
+            <span className="qr-section__code-display">{gameCode}</span>
           </div>
-          <span className="qr-section__code">{gameCode}</span>
           {import.meta.env.DEV && (
             <a
               href={joinUrl}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                fontSize: 12,
-                color: '#888',
-                textDecoration: 'underline',
-                marginTop: 4,
-              }}
+              className="qr-section__dev-link"
             >
               Open player view ↗
             </a>
@@ -92,7 +88,7 @@ export function Lobby({
           </button>
 
           {!canStart && (
-            <p className="lobby__hint">NEED AT LEAST 2 PLAYERS TO START</p>
+            <p className="lobby__hint">You'll need at least 2 players to start</p>
           )}
         </div>
       </main>
