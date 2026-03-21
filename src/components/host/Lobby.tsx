@@ -15,7 +15,7 @@ export function Lobby({
   const removePlayer = useMutation(api.players.remove)
   const { error, isRejected, clearError, reject } = useActionFeedback()
 
-  const joinUrl = `${window.location.origin}?code=${gameCode}`
+  const joinUrl = `${window.location.origin}?game=${gameCode}`
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(joinUrl)}`
 
   const playerCount = players?.length ?? 0

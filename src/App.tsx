@@ -102,7 +102,7 @@ function JoinPage({
     try {
       const game = await convex.query(api.games.getByCode, { code: trimmed })
       if (game) {
-        navigate('/', { code: trimmed })
+        navigate('/', { game: trimmed })
       } else {
         reject('GAME NOT FOUND')
       }
@@ -200,7 +200,7 @@ function HostLanding({
         captionPhaseDurationMs: captionSeconds * 1000,
         votePhaseDurationMs: voteSeconds * 1000,
       })
-      navigate('/host', { code })
+      navigate('/host', { game: code })
     } catch {
       setCreating(false)
     }

@@ -9,14 +9,14 @@ type Route =
 function getRoute(): Route {
   const path = window.location.pathname
   const params = new URLSearchParams(window.location.search)
-  const code = params.get('code')
+  const gameCode = params.get('game') ?? params.get('code')
 
   if (path === '/host') {
-    if (code) return { mode: 'host', gameCode: code.toUpperCase() }
+    if (gameCode) return { mode: 'host', gameCode: gameCode.toUpperCase() }
     return { mode: 'host-landing', gameCode: null }
   }
 
-  if (code) return { mode: 'player', gameCode: code.toUpperCase() }
+  if (gameCode) return { mode: 'player', gameCode: gameCode.toUpperCase() }
   return { mode: 'join', gameCode: null }
 }
 
