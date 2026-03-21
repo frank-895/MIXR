@@ -1,9 +1,12 @@
+import { authTables } from '@convex-dev/auth/server'
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 export default defineSchema({
+  ...authTables,
   games: defineTable({
     code: v.string(),
+    hostUserId: v.id('users'),
     state: v.string(),
     totalRounds: v.number(),
     currentRound: v.number(),

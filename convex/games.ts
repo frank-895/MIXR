@@ -1,6 +1,8 @@
+import { getAuthUserId } from '@convex-dev/auth/server'
 import { v } from 'convex/values'
 import { internal } from './_generated/api'
 import { mutation, query } from './_generated/server'
+import { requireAuthUserId, requireGameHost } from './authHelpers'
 import {
   DEFAULT_CAPTION_PHASE_DURATION_MS,
   DEFAULT_VOTE_PHASE_DURATION_MS,
@@ -15,8 +17,8 @@ import { MEME_IMAGES } from './seed'
 export const skipPhase = mutation({
   args: { gameId: v.id('games') },
   handler: async (ctx, args) => {
-    const game = await ctx.db.get(args.gameId)
-    if (!game || game.state !== 'playing') return
+    const game = await requireGameHost(ctx, args.gameId)
+    if (game.state !== 'playing') return
 
     const round = await ctx.db
       .query('rounds')
@@ -80,6 +82,8 @@ export const createGame = mutation({
     votePhaseDurationMs: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const hostUserId = await requireAuthUserId(ctx)
+
     if (args.totalRounds < 1 || args.totalRounds > 10) {
       throw new Error('totalRounds must be between 1 and 10')
     }
@@ -117,6 +121,7 @@ export const createGame = mutation({
 
     const gameId = await ctx.db.insert('games', {
       code,
+      hostUserId,
       state: 'lobby',
       totalRounds: args.totalRounds,
       currentRound: 1,
@@ -126,6 +131,33 @@ export const createGame = mutation({
     })
 
     return { gameId, code }
+  },
+})
+
+export const getHostViewByCode = query({
+  args: { code: v.string() },
+  handler: async (ctx, args) => {
+    if (!isValidGameCode(args.code)) {
+      return { status: 'notFound' as const }
+    }
+
+    const [userId, game] = await Promise.all([
+      getAuthUserId(ctx),
+      ctx.db
+        .query('games')
+        .withIndex('by_code', (q) => q.eq('code', normalizeGameCode(args.code)))
+        .unique(),
+    ])
+
+    if (!game) {
+      return { status: 'notFound' as const }
+    }
+
+    if (userId === null || game.hostUserId !== userId) {
+      return { status: 'forbidden' as const }
+    }
+
+    return { status: 'ok' as const, game }
   },
 })
 
@@ -151,14 +183,7 @@ export const get = query({
 export const startGame = mutation({
   args: { gameId: v.id('games') },
   handler: async (ctx, args) => {
-    const game = await ctx.db.get(args.gameId)
-    if (!game) {
-      logBoundaryEvent('game_start_rejected', {
-        reason: 'game_not_found',
-        gameId: args.gameId,
-      })
-      throw new Error('GAME NOT FOUND')
-    }
+    const game = await requireGameHost(ctx, args.gameId)
     if (game.state !== 'lobby') {
       logBoundaryEvent('game_start_rejected', {
         reason: 'game_already_started',

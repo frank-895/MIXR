@@ -1,4 +1,5 @@
-import { useConvex, useMutation } from 'convex/react'
+import { useAuthActions } from '@convex-dev/auth/react'
+import { useConvex, useConvexAuth, useMutation } from 'convex/react'
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../convex/_generated/api'
 import { HostApp } from './components/host/HostApp'
@@ -11,7 +12,7 @@ function App() {
   const { mode, gameCode, navigate } = useRoute()
 
   if (mode === 'host' && gameCode) {
-    return <HostApp gameCode={gameCode} />
+    return <HostRoute gameCode={gameCode} navigate={navigate} />
   }
 
   if (mode === 'player' && gameCode) {
@@ -25,7 +26,7 @@ function App() {
   if (mode === 'host-landing') {
     return (
       <div className="app-shell">
-        <HostLanding navigate={navigate} />
+        <HostRoute navigate={navigate} />
       </div>
     )
   }
@@ -35,6 +36,52 @@ function App() {
       <JoinPage navigate={navigate} />
     </div>
   )
+}
+
+function HostRoute({
+  gameCode,
+  navigate,
+}: {
+  gameCode?: string
+  navigate: (path: string, params?: Record<string, string>) => void
+}) {
+  const { isLoading, isAuthenticated } = useConvexAuth()
+  const { signIn } = useAuthActions()
+  const [error, setError] = useState<string | null>(null)
+  const attemptedRef = useRef(false)
+
+  useEffect(() => {
+    if (isLoading || isAuthenticated || attemptedRef.current) return
+
+    attemptedRef.current = true
+    setError(null)
+
+    void signIn('anonymous').catch((err) => {
+      attemptedRef.current = false
+      setError(err instanceof Error ? err.message.toUpperCase() : 'AUTH FAILED')
+    })
+  }, [isAuthenticated, isLoading, signIn])
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <main className="screen center">
+        <span
+          className="material-symbols-outlined animate-spin"
+          style={{ fontSize: 48 }}
+        >
+          hourglass_empty
+        </span>
+        <h2>{error ? "CAN'T SIGN IN HOST" : 'PREPARING HOST SESSION...'}</h2>
+        {error && <p style={{ margin: 0 }}>{error}</p>}
+      </main>
+    )
+  }
+
+  if (gameCode) {
+    return <HostApp gameCode={gameCode} />
+  }
+
+  return <HostLanding navigate={navigate} />
 }
 
 function JoinPage({

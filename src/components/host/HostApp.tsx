@@ -5,9 +5,9 @@ import { Lobby } from './Lobby'
 import { RoundScreen } from './RoundScreen'
 
 export function HostApp({ gameCode }: { gameCode: string }) {
-  const game = useQuery(api.games.getByCode, { code: gameCode })
+  const hostView = useQuery(api.games.getHostViewByCode, { code: gameCode })
 
-  if (game === undefined) {
+  if (hostView === undefined) {
     return (
       <div className="host-shell">
         <main className="screen center">
@@ -23,7 +23,7 @@ export function HostApp({ gameCode }: { gameCode: string }) {
     )
   }
 
-  if (game === null) {
+  if (hostView.status === 'notFound') {
     return (
       <div className="host-shell">
         <main className="screen center">
@@ -32,6 +32,21 @@ export function HostApp({ gameCode }: { gameCode: string }) {
       </div>
     )
   }
+
+  if (hostView.status === 'forbidden') {
+    return (
+      <div className="host-shell">
+        <main className="screen center">
+          <h1>HOST ACCESS DENIED</h1>
+          <p style={{ margin: 0, textAlign: 'center', maxWidth: 360 }}>
+            You can&apos;t manage this game from this session.
+          </p>
+        </main>
+      </div>
+    )
+  }
+
+  const { game } = hostView
 
   if (game.state === 'lobby') {
     return <Lobby game={game} gameCode={gameCode} />

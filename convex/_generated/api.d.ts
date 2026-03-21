@@ -8,10 +8,13 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
+import type * as authHelpers from "../authHelpers.js";
 import type * as captionModeration from "../captionModeration.js";
 import type * as captions from "../captions.js";
 import type * as constants from "../constants.js";
 import type * as games from "../games.js";
+import type * as http from "../http.js";
 import type * as input from "../input.js";
 import type * as internal_gameCleanup from "../internal/gameCleanup.js";
 import type * as internal_roundStats from "../internal/roundStats.js";
@@ -29,10 +32,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
+  authHelpers: typeof authHelpers;
   captionModeration: typeof captionModeration;
   captions: typeof captions;
   constants: typeof constants;
   games: typeof games;
+  http: typeof http;
   input: typeof input;
   "internal/gameCleanup": typeof internal_gameCleanup;
   "internal/roundStats": typeof internal_roundStats;

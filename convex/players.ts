@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
+import { requireGameHost } from './authHelpers'
 import { MAX_PLAYER_NAME_LENGTH, MAX_PLAYERS_PER_GAME } from './constants'
 import { hasInvalidPlayerNameChars, normalizePlayerName } from './input'
 import { logBoundaryEvent } from './logging'
@@ -135,15 +136,7 @@ export const get = query({
 export const remove = mutation({
   args: { gameId: v.id('games'), playerId: v.id('players') },
   handler: async (ctx, args) => {
-    const game = await ctx.db.get(args.gameId)
-    if (!game) {
-      logBoundaryEvent('player_remove_rejected', {
-        reason: 'game_not_found',
-        gameId: args.gameId,
-        playerId: args.playerId,
-      })
-      throw new Error('GAME NOT FOUND')
-    }
+    const game = await requireGameHost(ctx, args.gameId)
     if (game.state !== 'lobby') {
       logBoundaryEvent('player_remove_rejected', {
         reason: 'game_already_started',
