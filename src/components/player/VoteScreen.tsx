@@ -63,7 +63,8 @@ function SwipeableCard({
     const velocity = info.velocity.x
     if (Math.abs(swipe) > SWIPE_THRESHOLD || Math.abs(velocity) > 500) {
       const dir = swipe > 0 ? 1 : -1
-      flyOff(dir).then(() => onVote(swipe > 0))
+      flyOff(dir)
+      onVote(swipe > 0)
     } else {
       animate(x, 0, { type: 'spring', stiffness: 300, damping: 25 })
     }
