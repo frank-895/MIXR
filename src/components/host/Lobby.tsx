@@ -20,8 +20,9 @@ export function Lobby({
 
   return (
     <div className="host-shell">
-      <header className="brutal-header" style={{ justifyContent: 'center' }}>
-        <h2 style={{ fontSize: 24, margin: 0 }}>GAME LOBBY</h2>
+      <header className="brutal-header" style={{ justifyContent: 'center', gap: 12 }}>
+        <span className="brand-label brand-label--inline">MIXR</span>
+        <h2 style={{ fontSize: 24, margin: 0 }}>CAPTION THIS</h2>
       </header>
 
       <main className="lobby">

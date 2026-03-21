@@ -50,11 +50,8 @@ function Landing({
   return (
     <main className="screen center">
       <div className="text-center mb-8">
-        <h1>
-          KNOW
-          <br />
-          YOUR MEME
-        </h1>
+        <p className="brand-label">MIXR</p>
+        <h1>CAPTION THIS</h1>
       </div>
 
       <div className="form-stack">

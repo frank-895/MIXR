@@ -161,6 +161,25 @@ p {
   background-color: rgba(249, 228, 6, 0.1);
 }
 
+/* ===== BRAND LABEL ===== */
+
+.brand-label {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: var(--black);
+  color: var(--primary);
+  padding: 4px 10px;
+  display: inline-block;
+}
+
+.brand-label--inline {
+  font-size: 12px;
+  padding: 2px 8px;
+}
+
 /* ===== BRUTAL BUTTONS ===== */
 
 .brutal-btn {
