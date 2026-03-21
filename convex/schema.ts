@@ -39,12 +39,6 @@ export default defineSchema({
     score: v.number(),
     exposureCount: v.number(),
     createdAt: v.optional(v.number()),
-    dedupeStatus: v.optional(
-      v.union(v.literal('pending'), v.literal('ready'), v.literal('failed'))
-    ),
-    semanticKeyCaptionId: v.optional(v.id('captions')),
-    nextSemanticSiblingId: v.optional(v.id('captions')),
-    embedding: v.optional(v.array(v.number())),
   })
     .index('by_roundId', ['roundId'])
     .index('by_roundId_and_text', ['roundId', 'text'])
@@ -54,14 +48,9 @@ export default defineSchema({
     userId: v.id('players'),
     roundId: v.optional(v.id('rounds')),
     captionId: v.id('captions'),
-    semanticKeyCaptionId: v.optional(v.id('captions')),
     value: v.boolean(),
   })
     .index('by_userId_and_captionId', ['userId', 'captionId'])
     .index('by_captionId', ['captionId'])
-    .index('by_userId_and_roundId', ['userId', 'roundId'])
-    .index('by_userId_and_semanticKeyCaptionId', [
-      'userId',
-      'semanticKeyCaptionId',
-    ]),
+    .index('by_userId_and_roundId', ['userId', 'roundId']),
 })

@@ -1,15 +1,9 @@
 import { v } from 'convex/values'
-import { internal } from './_generated/api'
-import type { Doc, Id } from './_generated/dataModel'
+import type { Id } from './_generated/dataModel'
 import { mutation, type QueryCtx, query } from './_generated/server'
 import { getPlayerModerationError, isPlayerKicked } from './captionModeration'
 import { VOTE_COOLDOWN_MS } from './constants'
 import { logBoundaryEvent } from './logging'
-
-type CandidateGroup = {
-  semanticKeyCaptionId: Id<'captions'>
-  members: Doc<'captions'>[]
-}
 
 function stableHash(input: string): number {
   let hash = 2166136261
@@ -29,47 +23,6 @@ function compareByStableHash(aKey: string, bKey: string): number {
   return aKey.localeCompare(bKey)
 }
 
-async function getCandidateGroups(
-  ctx: QueryCtx,
-  args: { playerId: Id<'players'>; roundId: Id<'rounds'> }
-): Promise<CandidateGroup[]> {
-  return await ctx.runQuery(
-    internal.internal.captionDedupe.getVoteCandidateGroups,
-    {
-      playerId: args.playerId,
-      roundId: args.roundId,
-    }
-  )
-}
-
-async function getVotedSemanticKeys(
-  ctx: QueryCtx,
-  args: { playerId: Id<'players'>; roundId: Id<'rounds'> }
-): Promise<Set<Id<'captions'> | undefined>> {
-  const playerVotes = await ctx.db
-    .query('votes')
-    .withIndex('by_userId_and_roundId', (q) =>
-      q.eq('userId', args.playerId).eq('roundId', args.roundId)
-    )
-    .take(200)
-
-  return new Set(playerVotes.map((vote) => vote.semanticKeyCaptionId))
-}
-
-async function getRoundPlayers(
-  ctx: QueryCtx,
-  roundId: Id<'rounds'>
-): Promise<Doc<'players'>[]> {
-  const round = await ctx.db.get(roundId)
-  if (!round) return []
-
-  return await ctx.db
-    .query('players')
-    .withIndex('by_gameId', (q) => q.eq('gameId', round.gameId))
-    .take(100)
-    .then((players) => players.filter((player) => !isPlayerKicked(player)))
-}
-
 async function isPlayerInRoundGame(
   ctx: QueryCtx,
   args: { playerId: Id<'players'>; roundId: Id<'rounds'> }
@@ -81,41 +34,6 @@ async function isPlayerInRoundGame(
 
   return Boolean(player && round && player.gameId === round.gameId)
 }
-
-function pickAssignedCaptionForPlayer(args: {
-  roundId: Id<'rounds'>
-  playerId: Id<'players'>
-  semanticKeyCaptionId: Id<'captions'>
-  members: Doc<'captions'>[]
-  players: Doc<'players'>[]
-}): Doc<'captions'> | null {
-  const authorIds = new Set<Id<'players'>>(
-    args.members.map((member) => member.userId)
-  )
-  const eligiblePlayers = [...args.players]
-    .filter((player) => !authorIds.has(player._id))
-    .sort((a, b) =>
-      compareByStableHash(
-        `${args.roundId}:${args.semanticKeyCaptionId}:${a._id}`,
-        `${args.roundId}:${args.semanticKeyCaptionId}:${b._id}`
-      )
-    )
-
-  const eligiblePlayerIndex = eligiblePlayers.findIndex(
-    (player) => player._id === args.playerId
-  )
-  if (eligiblePlayerIndex === -1 || args.members.length === 0) return null
-
-  const orderedMembers = [...args.members].sort((a, b) =>
-    compareByStableHash(
-      `${args.roundId}:${args.semanticKeyCaptionId}:${a._id}`,
-      `${args.roundId}:${args.semanticKeyCaptionId}:${b._id}`
-    )
-  )
-
-  return orderedMembers[eligiblePlayerIndex % orderedMembers.length] ?? null
-}
-
 export const getCandidates = query({
   args: {
     playerId: v.id('players'),
@@ -130,33 +48,36 @@ export const getCandidates = query({
       return []
     }
 
-    const groups = await getCandidateGroups(ctx, args)
-    const votedSemanticKeys = await getVotedSemanticKeys(ctx, args)
-    const roundPlayers = await getRoundPlayers(ctx, args.roundId)
     const player = await ctx.db.get(args.playerId)
 
     if (!player || isPlayerKicked(player)) {
       return []
     }
 
-    const candidates: Doc<'captions'>[] = groups
-      .filter((group) => !votedSemanticKeys.has(group.semanticKeyCaptionId))
+    const [captions, playerVotes] = await Promise.all([
+      ctx.db
+        .query('captions')
+        .withIndex('by_roundId', (q) => q.eq('roundId', args.roundId))
+        .take(500),
+      ctx.db
+        .query('votes')
+        .withIndex('by_userId_and_roundId', (q) =>
+          q.eq('userId', args.playerId).eq('roundId', args.roundId)
+        )
+        .take(200),
+    ])
+
+    const votedCaptionIds = new Set(playerVotes.map((vote) => vote.captionId))
+
+    const candidates = captions
+      .filter((caption) => caption.userId !== args.playerId)
+      .filter((caption) => !votedCaptionIds.has(caption._id))
       .sort((a, b) =>
         compareByStableHash(
-          `${args.roundId}:${a.semanticKeyCaptionId}`,
-          `${args.roundId}:${b.semanticKeyCaptionId}`
+          `${args.roundId}:${a._id}`,
+          `${args.roundId}:${b._id}`
         )
       )
-      .map((group) =>
-        pickAssignedCaptionForPlayer({
-          roundId: args.roundId,
-          playerId: args.playerId,
-          semanticKeyCaptionId: group.semanticKeyCaptionId,
-          members: group.members,
-          players: roundPlayers,
-        })
-      )
-      .filter((caption): caption is Doc<'captions'> => caption !== null)
 
     return candidates.slice(0, args.count).map((c) => ({
       captionId: c._id,
@@ -181,7 +102,6 @@ export const castVote = mutation({
       })
       throw new Error('VOTE REJECTED')
     }
-    const semanticKeyCaptionId = caption.semanticKeyCaptionId ?? caption._id
 
     const player = await ctx.db.get(args.playerId)
     if (!player) {
@@ -277,21 +197,18 @@ export const castVote = mutation({
 
     const existing = await ctx.db
       .query('votes')
-      .withIndex('by_userId_and_semanticKeyCaptionId', (q) =>
-        q
-          .eq('userId', args.playerId)
-          .eq('semanticKeyCaptionId', semanticKeyCaptionId)
+      .withIndex('by_userId_and_captionId', (q) =>
+        q.eq('userId', args.playerId).eq('captionId', args.captionId)
       )
       .unique()
 
     if (existing) {
       logBoundaryEvent('vote_rejected', {
-        reason: 'duplicate_vote_for_semantic_key',
+        reason: 'duplicate_vote_for_caption',
         playerId: player._id,
         playerName: player.name,
         captionId: args.captionId,
         roundId: round._id,
-        semanticKeyCaptionId,
       })
       return null
     }
@@ -300,7 +217,6 @@ export const castVote = mutation({
       userId: args.playerId,
       roundId: caption.roundId,
       captionId: args.captionId,
-      semanticKeyCaptionId,
       value: args.value,
     })
 

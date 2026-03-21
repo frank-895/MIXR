@@ -1,5 +1,4 @@
 import { v } from 'convex/values'
-import { internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 import { mutation, query } from './_generated/server'
 import {
@@ -169,14 +168,7 @@ export const submit = mutation({
       score: 0,
       exposureCount: 0,
       createdAt: now,
-      dedupeStatus: 'pending',
     })
-
-    await ctx.scheduler.runAfter(
-      0,
-      internal.internal.captionEmbedding.processCaption,
-      { captionId }
-    )
 
     return { status: 'ok', captionId }
   },
