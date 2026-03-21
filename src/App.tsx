@@ -112,6 +112,20 @@ function JoinPage({
           login
         </span>
       </button>
+
+      {import.meta.env.DEV && (
+        <a
+          href="/host"
+          style={{
+            fontSize: 12,
+            color: '#888',
+            textDecoration: 'underline',
+            marginTop: 8,
+          }}
+        >
+          Host a game ↗
+        </a>
+      )}
     </main>
   )
 }
