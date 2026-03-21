@@ -384,6 +384,12 @@ function classifyError(
   if (operation === 'caption') {
     if (message.includes('SLOW DOWN')) return 'caption_cooldown'
     if (message.includes('TOO LATE')) return 'caption_late'
+    if (
+      message.includes('ROUND NOT IN CAPTION STATE') ||
+      message.includes('CAPTION REJECTED')
+    ) {
+      return 'caption_closed'
+    }
     if (message.includes('REJECTED')) return 'caption_rejected'
   }
   if (operation === 'vote') {
@@ -557,6 +563,23 @@ async function fetchPlayers(
   return await client.query(api.players.listByGame, { gameId })
 }
 
+async function isRoundStillActive(args: {
+  client: ConvexHttpClient
+  gameId: Game['_id']
+  roundId: Round['_id']
+  state: Round['state']
+}): Promise<boolean> {
+  const currentRound = await args.client.query(api.rounds.getCurrent, {
+    gameId: args.gameId,
+  })
+
+  return Boolean(
+    currentRound &&
+      currentRound._id === args.roundId &&
+      currentRound.state === args.state
+  )
+}
+
 async function waitForGameStart(args: {
   client: ConvexHttpClient
   gameCode: string
@@ -602,6 +625,7 @@ async function waitForGameStart(args: {
 
 async function runCaptionPhase(args: {
   client: ConvexHttpClient
+  gameId: Game['_id']
   round: Round
   bots: BotPlayer[]
   config: LoadDemoConfig
@@ -623,6 +647,14 @@ async function runCaptionPhase(args: {
         Date.now() <
         args.round.captionEndsAt - CAPTION_SUBMISSION_GUARD_MS
       ) {
+        const stillActive = await isRoundStillActive({
+          client: args.client,
+          gameId: args.gameId,
+          roundId: args.round._id,
+          state: 'caption',
+        })
+        if (!stillActive) return
+
         args.attempts.captions += 1
         const startedAt = performance.now()
 
@@ -646,6 +678,7 @@ async function runCaptionPhase(args: {
           args.latencies.captions.push(performance.now() - startedAt)
           const key = classifyError('caption', error)
           args.errors[key] = (args.errors[key] ?? 0) + 1
+          if (key === 'caption_closed' || key === 'caption_late') return
         }
 
         captionAttempt += 1
@@ -657,6 +690,7 @@ async function runCaptionPhase(args: {
 
 async function runVotePhase(args: {
   client: ConvexHttpClient
+  gameId: Game['_id']
   round: Round
   bots: BotPlayer[]
   config: LoadDemoConfig
@@ -672,6 +706,14 @@ async function runVotePhase(args: {
   await Promise.all(
     args.bots.map(async (bot) => {
       await sleep(randomDelay(bot.voteIntervalMs))
+      let stillActive = await isRoundStillActive({
+        client: args.client,
+        gameId: args.gameId,
+        roundId: args.round._id,
+        state: 'vote',
+      })
+      if (!stillActive) return
+
       let snapshot = await args.client.query(api.votes.getVoteSnapshot, {
         playerId: bot.playerId,
         roundId: args.round._id,
@@ -681,6 +723,13 @@ async function runVotePhase(args: {
         Date.now() < args.round.voteEndsAt - VOTE_SUBMISSION_GUARD_MS
       ) {
         await sleep(Math.min(bot.voteIntervalMs, POLL_INTERVAL_MS))
+        stillActive = await isRoundStillActive({
+          client: args.client,
+          gameId: args.gameId,
+          roundId: args.round._id,
+          state: 'vote',
+        })
+        if (!stillActive) return
         snapshot = await args.client.query(api.votes.getVoteSnapshot, {
           playerId: bot.playerId,
           roundId: args.round._id,
@@ -690,6 +739,14 @@ async function runVotePhase(args: {
       const remainingCandidates = [...snapshot.candidates]
 
       while (Date.now() < args.round.voteEndsAt - VOTE_SUBMISSION_GUARD_MS) {
+        stillActive = await isRoundStillActive({
+          client: args.client,
+          gameId: args.gameId,
+          roundId: args.round._id,
+          state: 'vote',
+        })
+        if (!stillActive) return
+
         if (remainingCandidates.length === 0) return
 
         const candidateIndex = randomInt(0, remainingCandidates.length - 1)
@@ -779,6 +836,7 @@ async function orchestrateGame(args: {
       captionRounds.add(round._id)
       await runCaptionPhase({
         client: args.client,
+        gameId: args.gameId,
         round,
         bots: args.bots,
         config: args.config,
@@ -793,6 +851,7 @@ async function orchestrateGame(args: {
       voteRounds.add(round._id)
       await runVotePhase({
         client: args.client,
+        gameId: args.gameId,
         round,
         bots: args.bots,
         config: args.config,
