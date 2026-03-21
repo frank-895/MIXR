@@ -80,7 +80,9 @@ type Latencies = {
 }
 
 const BOT_NAME_PREFIX = 'BOT'
-const BOT_NAME_PAD = 3
+const BOT_NAME_MIN_TOTAL_LENGTH = 6
+const BOT_NAME_MAX_TOTAL_LENGTH = 20
+const BOT_NAME_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 const DEFAULT_SUMMARY_PREFIX = 'mixr-load-demo'
 const GAME_LOOKUP_TIMEOUT_MS = 10 * 60 * 1000
 const GAME_START_TIMEOUT_MS = 15 * 60 * 1000
@@ -277,9 +279,33 @@ function stableHash(input: string): number {
   return hash >>> 0
 }
 
+function randomString(length: number): string {
+  let result = ''
+  for (let i = 0; i < length; i++) {
+    result += BOT_NAME_CHARS[randomInt(0, BOT_NAME_CHARS.length - 1)]
+  }
+  return result
+}
+
 function botNameFor(index: number, attempt = 0): string {
   const suffix = attempt === 0 ? '' : String.fromCharCode(65 + attempt - 1)
-  return `${BOT_NAME_PREFIX}${String(index + 1).padStart(BOT_NAME_PAD, '0')}${suffix}`
+  const uniqueToken = (index + 1).toString(36).toUpperCase()
+  const minRandomLength = Math.max(
+    0,
+    BOT_NAME_MIN_TOTAL_LENGTH -
+      BOT_NAME_PREFIX.length -
+      uniqueToken.length -
+      suffix.length
+  )
+  const maxRandomLength = Math.max(
+    minRandomLength,
+    BOT_NAME_MAX_TOTAL_LENGTH -
+      BOT_NAME_PREFIX.length -
+      uniqueToken.length -
+      suffix.length
+  )
+  const randomLength = randomInt(minRandomLength, maxRandomLength)
+  return `${BOT_NAME_PREFIX}${randomString(randomLength)}${uniqueToken}${suffix}`
 }
 
 function intervalFromDistribution(
