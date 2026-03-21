@@ -70,7 +70,6 @@ function JoinPage({
     <main className="screen center">
       <div className="text-center mb-8">
         <p className="brand-label">MIXR</p>
-        <h1>CAPTION THIS</h1>
       </div>
 
       <div className="form-stack">
@@ -153,7 +152,6 @@ function HostLanding({
     <main className="screen center">
       <div className="text-center mb-8">
         <p className="brand-label">MIXR</p>
-        <h1>CAPTION THIS</h1>
       </div>
 
       <div className="form-stack">

@@ -26,7 +26,6 @@ export function JoinScreen({
     return (
       <main className="screen center">
         <p className="brand-label">MIXR</p>
-        <h1>CAPTION THIS</h1>
         <p>THIS GAME HAS ALREADY STARTED.</p>
       </main>
     )
@@ -49,7 +48,6 @@ export function JoinScreen({
     <main className="screen center">
       <div className="text-center mb-8">
         <p className="brand-label">MIXR</p>
-        <h1>CAPTION THIS</h1>
       </div>
 
       <div className="form-stack">

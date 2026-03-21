@@ -25,7 +25,6 @@ export function Lobby({
         style={{ justifyContent: 'center', gap: 12 }}
       >
         <span className="brand-label brand-label--inline">MIXR</span>
-        <h2 style={{ fontSize: 24, margin: 0 }}>CAPTION THIS</h2>
       </header>
 
       <main className="lobby">
