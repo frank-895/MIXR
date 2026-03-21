@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.21.0",
   "type": "module",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "dev": "vite",
     "build": "vite build",
     "format": "biome format --write .",
