@@ -8,9 +8,15 @@ import {
   useTransform,
 } from 'motion/react'
 import { useRef, useState } from 'react'
-import { useWebHaptics } from 'web-haptics/react'
+
 import { api } from '../../../convex/_generated/api'
 import type { Doc, Id } from '../../../convex/_generated/dataModel'
+import {
+  hapticHeavy,
+  hapticLight,
+  hapticMedium,
+  unlockHaptics,
+} from '../../lib/haptics'
 import { useActionFeedback } from '../../lib/useActionFeedback'
 import { useCountdown } from '../../lib/useCountdown'
 
@@ -21,13 +27,11 @@ function SwipeableCard({
   imageUrl,
   onVote,
   disabled,
-  trigger,
 }: {
   candidate: { captionId: Id<'captions'>; text: string }
   imageUrl: string
   onVote: (value: boolean) => void
   disabled: boolean
-  trigger: ReturnType<typeof useWebHaptics>['trigger']
 }) {
   const x = useMotionValue(0)
   const rotate = useTransform(x, [-200, 0, 200], [-12, 0, 12])
@@ -48,7 +52,7 @@ function SwipeableCard({
   const handleDrag = (_: unknown, info: PanInfo) => {
     const crossed = Math.abs(info.offset.x) > SWIPE_THRESHOLD
     if (crossed && !pastThreshold.current) {
-      trigger([{ duration: 20, intensity: 0.7 }])
+      hapticMedium()
       pastThreshold.current = true
     } else if (!crossed) {
       pastThreshold.current = false
@@ -73,6 +77,7 @@ function SwipeableCard({
       key={candidate.captionId}
       drag="x"
       dragElastic={0.9}
+      onDragStart={unlockHaptics}
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
       style={{ x, rotate, cursor: 'grab', touchAction: 'pan-y' }}
@@ -177,15 +182,14 @@ export function VoteScreen({
   const seconds = useCountdown(round.voteEndsAt)
   const [submitting, setSubmitting] = useState(false)
   const { error, clearError, reject } = useActionFeedback()
-  const { trigger } = useWebHaptics()
   const current = candidates?.[0]
 
   const handleVote = async (value: boolean) => {
     if (!current || submitting) return
     if (value) {
-      trigger([{ duration: 30 }, { delay: 60, duration: 40, intensity: 1 }])
+      hapticHeavy()
     } else {
-      trigger([{ duration: 15, intensity: 0.5 }])
+      hapticLight()
     }
     setSubmitting(true)
     clearError()
@@ -236,7 +240,6 @@ export function VoteScreen({
               imageUrl={round.imageUrl}
               onVote={handleVote}
               disabled={submitting}
-              trigger={trigger}
             />
           </motion.div>
         ) : null}
