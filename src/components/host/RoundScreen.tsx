@@ -9,6 +9,10 @@ import { VotePhaseGrid } from './VotePhaseGrid'
 
 export function RoundScreen({ game }: { game: Doc<'games'> }) {
   const round = useQuery(api.rounds.getCurrent, { gameId: game._id })
+  const captions = useQuery(
+    api.captions.listByRound,
+    round ? { roundId: round._id } : 'skip'
+  )
   const skipPhase = useMutation(api.games.skipPhase)
 
   if (round?.state === 'reveal') {
@@ -48,11 +52,18 @@ export function RoundScreen({ game }: { game: Doc<'games'> }) {
             color: round.state === 'caption' ? '#000' : 'var(--pink)',
           }}
         >
-          {round.state === 'caption'
-            ? 'CAPTIONING...'
-            : round.state === 'vote'
-              ? 'VOTING...'
-              : 'ROUND COMPLETE'}
+          {round.state === 'caption' ? (
+            <>
+              CAPTIONS
+              <span className="lobby__player-count" style={{ marginLeft: 12 }}>
+                {captions?.length ?? 0}
+              </span>
+            </>
+          ) : round.state === 'vote' ? (
+            'VOTING...'
+          ) : (
+            'ROUND COMPLETE'
+          )}
         </div>
         <button
           type="button"

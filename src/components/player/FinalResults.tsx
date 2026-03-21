@@ -1,6 +1,7 @@
 import { useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { Crown } from '../Crown'
 import { Loader } from '../Loader'
 
 type ScoreEntry = { playerId: string; name: string; totalScore: number }
@@ -84,10 +85,13 @@ export function FinalResults({
               <br />
               CHAMPION
             </h2>
-            <div className="winner-card">
+            <div
+              className="winner-card"
+              style={{ position: 'relative', overflow: 'visible' }}
+            >
+              <Crown size={52} />
               <div className="winner-info">
                 <div className="winner-name">
-                  <span>👑</span>
                   <span>{winner.name}</span>
                 </div>
                 <div className="winner-pts">{winner.totalScore} PTS</div>

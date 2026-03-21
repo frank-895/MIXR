@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
 import { useRoute } from '../../lib/useRoute'
+import { Crown } from '../Crown'
 import { Loader } from '../Loader'
 import { GameRevealScreen } from './RevealScreen'
 
@@ -65,10 +66,13 @@ export function FinalResults({ game }: { game: Doc<'games'> }) {
               <br />
               CHAMPION
             </h2>
-            <div className="winner-card">
+            <div
+              className="winner-card"
+              style={{ position: 'relative', overflow: 'visible' }}
+            >
+              <Crown size={52} />
               <div className="winner-info">
                 <div className="winner-name">
-                  <span>👑</span>
                   <span>{winner.name}</span>
                 </div>
                 <div className="winner-pts">{winner.totalScore} PTS</div>

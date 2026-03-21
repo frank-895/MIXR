@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
+import { Crown } from '../Crown'
 import { Loader } from '../Loader'
 
 // Steps: -1=intro, 0=3rd, 1=2nd, 2=1st, 3=leaderboard
@@ -228,8 +229,9 @@ function RevealLeaderboard({ scores }: { scores: ScoreEntry[] }) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.1 }}
           >
+            {i === 0 && <Crown size={44} />}
             <div className="leaderboard-left">
-              <span className="leaderboard-rank">{i === 0 ? '👑' : i + 1}</span>
+              <span className="leaderboard-rank">{i + 1}</span>
               <span className="leaderboard-name">{entry.name}</span>
             </div>
             <span className="leaderboard-score">{entry.totalScore} PTS</span>

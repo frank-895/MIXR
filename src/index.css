@@ -441,6 +441,7 @@ p {
   flex-direction: column;
   background: var(--white);
   list-style: none;
+  overflow: visible;
 }
 
 .leaderboard-row {
@@ -470,6 +471,19 @@ p {
 .leaderboard-row.first-place.first-place {
   background: var(--primary);
   font-weight: 800;
+  position: relative;
+  overflow: visible;
+}
+
+/* SVG crown — sits on top-left of first-place row */
+.crown {
+  position: absolute;
+  top: -24px;
+  left: -6px;
+  z-index: 2;
+  transform-origin: center bottom;
+  filter: drop-shadow(1.5px 1.5px 0px #000);
+  pointer-events: none;
 }
 
 .leaderboard-left {
@@ -1300,6 +1314,8 @@ p {
 
 .reveal-leaderboard-row.first-place {
   background: var(--primary);
+  position: relative;
+  overflow: visible;
 }
 
 /* ===== SELECT ===== */

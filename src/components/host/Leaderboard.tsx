@@ -2,6 +2,7 @@ import { useQuery } from 'convex/react'
 import { AnimatePresence, motion } from 'motion/react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { Crown } from '../Crown'
 
 type ScoreEntry = { playerId: string; name: string; totalScore: number }
 
@@ -24,10 +25,9 @@ export function Leaderboard({ gameId }: { gameId: Id<'games'> }) {
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               className={`leaderboard-row${i === 0 ? ' first-place' : ''}`}
             >
+              {i === 0 && <Crown size={44} />}
               <div className="leaderboard-left">
-                <span className="leaderboard-rank">
-                  {i === 0 ? '👑' : i + 1}
-                </span>
+                <span className="leaderboard-rank">{i + 1}</span>
                 <span className="leaderboard-name">{entry.name}</span>
               </div>
               <span className="leaderboard-score">{entry.totalScore} PTS</span>
