@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useRef, useState } from 'react'
+import { useWebHaptics } from 'web-haptics/react'
 import { api } from '../../../convex/_generated/api'
 import type { Doc, Id } from '../../../convex/_generated/dataModel'
 import { useCountdown } from '../../lib/useCountdown'
@@ -29,6 +30,7 @@ export function CaptionScreen({
   const [cooldownEnd, setCooldownEnd] = useState(0)
   const [cooldownLeft, setCooldownLeft] = useState(0)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const { trigger } = useWebHaptics()
 
   useEffect(() => {
     textareaRef.current?.focus()
@@ -63,6 +65,7 @@ export function CaptionScreen({
       setText('')
       setCooldownEnd(Date.now() + COOLDOWN_SECONDS * 1000)
       setCooldownLeft(COOLDOWN_SECONDS)
+      trigger([{ duration: 20 }, { delay: 40, duration: 30, intensity: 1 }])
     } catch {
       // Submission may have failed due to cooldown or phase end
     } finally {
