@@ -1,18 +1,23 @@
 import { useCallback, useSyncExternalStore } from 'react'
 
 type Route =
-  | { mode: 'landing'; gameCode: null }
+  | { mode: 'join'; gameCode: null }
+  | { mode: 'host-landing'; gameCode: null }
   | { mode: 'host'; gameCode: string }
   | { mode: 'player'; gameCode: string }
 
 function getRoute(): Route {
+  const path = window.location.pathname
   const params = new URLSearchParams(window.location.search)
-  const host = params.get('host')
-  const game = params.get('game')
+  const code = params.get('code')
 
-  if (host) return { mode: 'host', gameCode: host.toUpperCase() }
-  if (game) return { mode: 'player', gameCode: game.toUpperCase() }
-  return { mode: 'landing', gameCode: null }
+  if (path === '/host') {
+    if (code) return { mode: 'host', gameCode: code.toUpperCase() }
+    return { mode: 'host-landing', gameCode: null }
+  }
+
+  if (code) return { mode: 'player', gameCode: code.toUpperCase() }
+  return { mode: 'join', gameCode: null }
 }
 
 function subscribe(callback: () => void) {
@@ -35,11 +40,14 @@ function getSnapshot() {
 export function useRoute() {
   const route = useSyncExternalStore(subscribe, getSnapshot)
 
-  const navigate = useCallback((params: Record<string, string>) => {
-    const search = new URLSearchParams(params).toString()
-    window.history.pushState(null, '', `?${search}`)
-    window.dispatchEvent(new PopStateEvent('popstate'))
-  }, [])
+  const navigate = useCallback(
+    (path: string, params?: Record<string, string>) => {
+      const search = params ? `?${new URLSearchParams(params).toString()}` : ''
+      window.history.pushState(null, '', `${path}${search}`)
+      window.dispatchEvent(new PopStateEvent('popstate'))
+    },
+    []
+  )
 
   return { ...route, navigate }
 }

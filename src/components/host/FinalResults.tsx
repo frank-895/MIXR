@@ -88,7 +88,7 @@ export function FinalResults({ game }: { game: Doc<'games'> }) {
         <button
           type="button"
           className="brutal-btn"
-          onClick={() => navigate({})}
+          onClick={() => navigate('/host')}
           style={{ marginTop: 'auto' }}
         >
           <span>NEW GAME</span>

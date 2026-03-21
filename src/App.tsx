@@ -1,4 +1,4 @@
-import { useMutation } from 'convex/react'
+import { useConvex, useMutation } from 'convex/react'
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../convex/_generated/api'
 import { HostApp } from './components/host/HostApp'
@@ -21,17 +21,105 @@ function App() {
     )
   }
 
+  if (mode === 'host-landing') {
+    return (
+      <div className="app-shell">
+        <HostLanding navigate={navigate} />
+      </div>
+    )
+  }
+
   return (
     <div className="app-shell">
-      <Landing navigate={navigate} />
+      <JoinPage navigate={navigate} />
     </div>
   )
 }
 
-function Landing({
+function JoinPage({
   navigate,
 }: {
-  navigate: (params: Record<string, string>) => void
+  navigate: (path: string, params?: Record<string, string>) => void
+}) {
+  const convex = useConvex()
+  const [code, setCode] = useState('')
+  const [error, setError] = useState('')
+  const [checking, setChecking] = useState(false)
+
+  const handleJoin = async () => {
+    const trimmed = code.trim().toUpperCase()
+    if (!trimmed) return
+
+    setError('')
+    setChecking(true)
+    try {
+      const game = await convex.query(api.games.getByCode, { code: trimmed })
+      if (game) {
+        navigate('/', { code: trimmed })
+      } else {
+        setError('GAME NOT FOUND')
+      }
+    } catch {
+      setError('SOMETHING WENT WRONG')
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  return (
+    <main className="screen center">
+      <div className="text-center mb-8">
+        <p className="brand-label">MIXR</p>
+        <h1>CAPTION THIS</h1>
+      </div>
+
+      <div className="form-stack">
+        <input
+          type="text"
+          className="brutal-input"
+          placeholder="ENTER GAME CODE"
+          value={code}
+          onChange={(e) => {
+            setCode(e.target.value.toUpperCase())
+            setError('')
+          }}
+          onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+          maxLength={6}
+          style={{ textAlign: 'center', letterSpacing: 4, fontSize: 24 }}
+        />
+        {error && (
+          <p
+            style={{
+              color: '#ef4444',
+              margin: 0,
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+          >
+            {error}
+          </p>
+        )}
+      </div>
+
+      <button
+        type="button"
+        className="brutal-btn"
+        onClick={handleJoin}
+        disabled={!code.trim() || checking}
+      >
+        <span>{checking ? 'CHECKING...' : 'JOIN GAME'}</span>
+        <span className="material-symbols-outlined" aria-hidden="true">
+          login
+        </span>
+      </button>
+    </main>
+  )
+}
+
+function HostLanding({
+  navigate,
+}: {
+  navigate: (path: string, params?: Record<string, string>) => void
 }) {
   const createGame = useMutation(api.games.createGame)
   const [rounds, setRounds] = useState(3)
@@ -41,7 +129,7 @@ function Landing({
     setCreating(true)
     try {
       const { code } = await createGame({ totalRounds: rounds })
-      navigate({ host: code })
+      navigate('/host', { code })
     } catch {
       setCreating(false)
     }

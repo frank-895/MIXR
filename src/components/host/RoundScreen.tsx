@@ -53,7 +53,9 @@ export function RoundScreen({ game }: { game: Doc<'games'> }) {
         <button
           type="button"
           className="brutal-header-btn"
-          style={round.state === 'finished' ? { visibility: 'hidden' } : undefined}
+          style={
+            round.state === 'finished' ? { visibility: 'hidden' } : undefined
+          }
           onClick={() => skipPhase({ gameId: game._id })}
           aria-label="Skip to next phase"
         >

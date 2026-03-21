@@ -12,7 +12,7 @@ export function Lobby({
   const players = useQuery(api.players.listByGame, { gameId: game._id })
   const startGame = useMutation(api.games.startGame)
 
-  const joinUrl = `${window.location.origin}?game=${gameCode}`
+  const joinUrl = `${window.location.origin}?code=${gameCode}`
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(joinUrl)}`
 
   const playerCount = players?.length ?? 0
@@ -20,7 +20,10 @@ export function Lobby({
 
   return (
     <div className="host-shell">
-      <header className="brutal-header" style={{ justifyContent: 'center', gap: 12 }}>
+      <header
+        className="brutal-header"
+        style={{ justifyContent: 'center', gap: 12 }}
+      >
         <span className="brand-label brand-label--inline">MIXR</span>
         <h2 style={{ fontSize: 24, margin: 0 }}>CAPTION THIS</h2>
       </header>
