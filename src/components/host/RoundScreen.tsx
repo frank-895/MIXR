@@ -31,8 +31,11 @@ export function RoundScreen({ game }: { game: Doc<'games'> }) {
     <div className="host-shell">
       {/* Header */}
       <header className="brutal-header">
-        <div className="badge badge--primary">
-          ROUND {game.currentRound} / {game.totalRounds}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          <div className="badge badge--primary">
+            {game.currentRound} / {game.totalRounds}
+          </div>
+          {round.state !== 'finished' && <Timer targetTime={targetTime} />}
         </div>
         <div
           style={{
@@ -49,7 +52,6 @@ export function RoundScreen({ game }: { game: Doc<'games'> }) {
               ? 'CAPTION + VOTE'
               : 'ROUND COMPLETE'}
         </div>
-        {round.state !== 'finished' && <Timer targetTime={targetTime} />}
         <button
           type="button"
           className="brutal-header-btn"
@@ -83,8 +85,7 @@ function Timer({ targetTime }: { targetTime: number }) {
   const formatted = String(seconds).padStart(2, '0')
   return (
     <div className="timer-badge">
-      <span className="material-symbols-outlined">timer</span>
-      <span>00:{formatted}</span>
+      <span>{formatted}s</span>
     </div>
   )
 }

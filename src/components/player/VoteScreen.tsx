@@ -53,7 +53,7 @@ export function VoteScreen({
         className="progress-timer"
         style={{ position: 'absolute', top: 16, right: 16 }}
       >
-        0:{formatted}
+        {formatted}s
       </div>
 
       {current ? (

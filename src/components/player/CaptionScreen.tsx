@@ -82,8 +82,7 @@ export function CaptionScreen({
       <header className="brutal-header">
         <div style={{ width: 48 }} />
         <div className="timer-badge">
-          <span className="material-symbols-outlined">timer</span>
-          <span>00:{formatted}</span>
+          <span>{formatted}s</span>
         </div>
       </header>
 
