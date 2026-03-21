@@ -381,13 +381,13 @@ p {
 .vote-buttons {
   display: flex;
   justify-content: center;
-  gap: 32px;
-  padding: 16px;
+  gap: 24px;
+  padding: 8px;
 }
 
 .vote-btn {
-  width: 80px;
-  height: 80px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   border: var(--border);
   box-shadow: var(--shadow);
@@ -412,7 +412,7 @@ p {
 }
 
 .vote-btn .material-symbols-outlined {
-  font-size: 40px;
+  font-size: 28px;
 }
 
 /* ===== LEADERBOARD ===== */

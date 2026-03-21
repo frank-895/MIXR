@@ -1,10 +1,163 @@
 import { useMutation, useQuery } from 'convex/react'
-import { useState } from 'react'
+import {
+  AnimatePresence,
+  animate,
+  motion,
+  type PanInfo,
+  useMotionValue,
+  useTransform,
+} from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
 import { useWebHaptics } from 'web-haptics/react'
 import { api } from '../../../convex/_generated/api'
 import type { Doc, Id } from '../../../convex/_generated/dataModel'
 import { useActionFeedback } from '../../lib/useActionFeedback'
 import { useCountdown } from '../../lib/useCountdown'
+
+const SWIPE_THRESHOLD = 100
+
+function SwipeableCard({
+  candidate,
+  imageUrl,
+  onVote,
+  disabled,
+  trigger,
+}: {
+  candidate: { captionId: Id<'captions'>; text: string }
+  imageUrl: string
+  onVote: (value: boolean) => void
+  disabled: boolean
+  trigger: ReturnType<typeof useWebHaptics>['trigger']
+}) {
+  const x = useMotionValue(0)
+  const rotate = useTransform(x, [-200, 0, 200], [-12, 0, 12])
+  const approveOpacity = useTransform(x, [0, SWIPE_THRESHOLD], [0, 1])
+  const rejectOpacity = useTransform(x, [-SWIPE_THRESHOLD, 0], [1, 0])
+  const pastThreshold = useRef(false)
+
+  useEffect(() => {
+    const unsubscribe = x.on('change', (latest) => {
+      const crossed = Math.abs(latest) > SWIPE_THRESHOLD
+      if (crossed && !pastThreshold.current) {
+        trigger([{ duration: 20, intensity: 0.7 }])
+        pastThreshold.current = true
+      } else if (!crossed) {
+        pastThreshold.current = false
+      }
+    })
+    return unsubscribe
+  }, [x, trigger])
+
+  const flyOff = (dir: number) => {
+    const flyX = dir * 500
+    const flyRotate = dir * 20
+    return Promise.all([
+      animate(x, flyX, { duration: 0.25, ease: 'easeIn' }),
+      animate(rotate, flyRotate, { duration: 0.25, ease: 'easeIn' }),
+    ])
+  }
+
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
+    if (disabled) return
+    const swipe = info.offset.x
+    const velocity = info.velocity.x
+    if (Math.abs(swipe) > SWIPE_THRESHOLD || Math.abs(velocity) > 500) {
+      const dir = swipe > 0 ? 1 : -1
+      flyOff(dir).then(() => onVote(swipe > 0))
+    } else {
+      animate(x, 0, { type: 'spring', stiffness: 300, damping: 25 })
+    }
+  }
+
+  return (
+    <motion.div
+      key={candidate.captionId}
+      drag="x"
+      dragElastic={0.9}
+      onDragEnd={handleDragEnd}
+      style={{ x, rotate, cursor: 'grab', touchAction: 'pan-y' }}
+      initial={{ scale: 0.95, opacity: 0, y: 30 }}
+      animate={{ scale: 1, opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+      className="meme-frame meme-frame--tall"
+      whileDrag={{ cursor: 'grabbing' }}
+    >
+      <img
+        src={imageUrl}
+        alt="Meme template"
+        draggable={false}
+        style={{ filter: 'grayscale(100%) contrast(1.25)' }}
+      />
+      {/* Caption Overlay */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: 24,
+          pointerEvents: 'none',
+        }}
+      >
+        <h2 className="impact-text">{candidate.text}</h2>
+      </div>
+
+      {/* Approve overlay */}
+      <motion.div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(0, 255, 0, 0.2)',
+          opacity: approveOpacity,
+          pointerEvents: 'none',
+          borderRadius: 'inherit',
+        }}
+      >
+        <span
+          className="material-symbols-outlined"
+          style={{
+            fontSize: 96,
+            color: '#00ff00',
+            fontVariationSettings: "'FILL' 1",
+            filter: 'drop-shadow(0 0 8px rgba(0,0,0,0.5))',
+          }}
+        >
+          favorite
+        </span>
+      </motion.div>
+
+      {/* Reject overlay */}
+      <motion.div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(255, 0, 0, 0.2)',
+          opacity: rejectOpacity,
+          pointerEvents: 'none',
+          borderRadius: 'inherit',
+        }}
+      >
+        <span
+          className="material-symbols-outlined"
+          style={{
+            fontSize: 96,
+            color: '#ef4444',
+            filter: 'drop-shadow(0 0 8px rgba(0,0,0,0.5))',
+          }}
+        >
+          close
+        </span>
+      </motion.div>
+    </motion.div>
+  )
+}
 
 export function VoteScreen({
   round,
@@ -23,13 +176,12 @@ export function VoteScreen({
   const castVote = useMutation(api.votes.castVote)
   const seconds = useCountdown(round.voteEndsAt)
   const [submitting, setSubmitting] = useState(false)
-  const { error, isRejected, clearError, reject } = useActionFeedback()
+  const { error, clearError, reject } = useActionFeedback()
   const { trigger } = useWebHaptics()
   const current = candidates?.[0]
 
   const handleVote = async (value: boolean) => {
     if (!current || submitting) return
-    // Fire haptics immediately for responsiveness
     if (value) {
       trigger([{ duration: 30 }, { delay: 60, duration: 40, intensity: 1 }])
     } else {
@@ -71,75 +223,39 @@ export function VoteScreen({
         {formatted}s
       </div>
 
-      {current ? (
-        <>
-          {/* Meme Card */}
-          <div
-            className="meme-frame meme-frame--tall"
-            style={{ maxHeight: 530, marginBottom: 32 }}
+      <AnimatePresence mode="popLayout">
+        {current ? (
+          <motion.div
+            key={current.captionId}
+            style={{ width: '100%', marginBottom: 24 }}
+            layout
           >
-            <img
-              src={round.imageUrl}
-              alt="Meme template"
-              style={{ filter: 'grayscale(100%) contrast(1.25)' }}
+            {/* Swipeable Meme Card */}
+            <SwipeableCard
+              candidate={current}
+              imageUrl={round.imageUrl}
+              onVote={handleVote}
+              disabled={submitting}
+              trigger={trigger}
             />
-            {/* Caption Overlay */}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                padding: 24,
-                pointerEvents: 'none',
-              }}
-            >
-              <h2 className="impact-text">{current.text}</h2>
-            </div>
-          </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
-          {/* Vote Buttons */}
-          <div className={`vote-buttons ${isRejected ? 'ui-rejected' : ''}`}>
-            <button
-              type="button"
-              className="vote-btn vote-btn--reject"
-              onClick={() => handleVote(false)}
-              aria-label="Reject"
-              disabled={submitting}
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-            <button
-              type="button"
-              className="vote-btn vote-btn--approve"
-              onClick={() => handleVote(true)}
-              aria-label="Approve"
-              disabled={submitting}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                favorite
-              </span>
-            </button>
-          </div>
-
-          {error && (
-            <p
-              style={{
-                marginTop: 12,
-                color: '#ef4444',
-                fontSize: 12,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-              }}
-            >
-              {error}
-            </p>
-          )}
-        </>
+      {current ? (
+        error && (
+          <p
+            style={{
+              marginTop: 12,
+              color: '#ef4444',
+              fontSize: 12,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+            }}
+          >
+            {error}
+          </p>
+        )
       ) : (
         <div
           className="brutal-card"
