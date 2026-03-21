@@ -4,7 +4,7 @@ import { internalMutation } from '../_generated/server'
 import {
   CAPTION_PHASE_DURATION_MS,
   GAME_RETENTION_MS,
-  OPEN_PHASE_DURATION_MS,
+  VOTE_PHASE_DURATION_MS,
 } from '../constants'
 import { MEME_IMAGES } from '../seed'
 
@@ -20,36 +20,36 @@ export const endCaptionPhase = internalMutation({
 
     const now = Date.now()
     await ctx.db.patch(args.roundId, {
-      state: 'open',
-      voteEndsAt: now + OPEN_PHASE_DURATION_MS,
+      state: 'vote',
+      voteEndsAt: now + VOTE_PHASE_DURATION_MS,
       scheduledEndCaptionJobId: undefined,
     })
 
-    const scheduledEndOpenJobId = await ctx.scheduler.runAfter(
-      OPEN_PHASE_DURATION_MS,
-      internal.internal.roundTransitions.endOpenPhase,
+    const scheduledEndVoteJobId = await ctx.scheduler.runAfter(
+      VOTE_PHASE_DURATION_MS,
+      internal.internal.roundTransitions.endVotePhase,
       { roundId: args.roundId }
     )
 
     await ctx.db.patch(args.roundId, {
-      scheduledEndOpenJobId,
+      scheduledEndVoteJobId,
     })
   },
 })
 
-export const endOpenPhase = internalMutation({
+export const endVotePhase = internalMutation({
   args: { roundId: v.id('rounds') },
   handler: async (ctx, args) => {
     const round = await ctx.db.get(args.roundId)
-    if (!round || round.state !== 'open') return
+    if (!round || round.state !== 'vote') return
 
-    if (round.scheduledEndOpenJobId) {
-      await ctx.scheduler.cancel(round.scheduledEndOpenJobId)
+    if (round.scheduledEndVoteJobId) {
+      await ctx.scheduler.cancel(round.scheduledEndVoteJobId)
     }
 
     await ctx.db.patch(args.roundId, {
       state: 'finished',
-      scheduledEndOpenJobId: undefined,
+      scheduledEndVoteJobId: undefined,
     })
 
     const game = await ctx.db.get(round.gameId)

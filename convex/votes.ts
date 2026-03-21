@@ -176,7 +176,7 @@ export const castVote = mutation({
     if (player.gameId !== round.gameId) {
       throw new Error('VOTE REJECTED')
     }
-    if (round.state !== 'open') throw new Error('VOTING IS CLOSED')
+    if (round.state !== 'vote') throw new Error('VOTING IS CLOSED')
     if (Date.now() > round.voteEndsAt) throw new Error('VOTING IS CLOSED')
 
     const latestVote = await ctx.db

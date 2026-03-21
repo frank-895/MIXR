@@ -33,18 +33,18 @@ export const skipPhase = mutation({
         internal.internal.roundTransitions.endCaptionPhase,
         { roundId: round._id }
       )
-    } else if (round.state === 'open') {
-      if (round.scheduledEndOpenJobId) {
-        await ctx.scheduler.cancel(round.scheduledEndOpenJobId)
-        await ctx.db.patch(round._id, { scheduledEndOpenJobId: undefined })
+    } else if (round.state === 'vote') {
+      if (round.scheduledEndVoteJobId) {
+        await ctx.scheduler.cancel(round.scheduledEndVoteJobId)
+        await ctx.db.patch(round._id, { scheduledEndVoteJobId: undefined })
       }
 
-      await ctx.runMutation(internal.internal.roundTransitions.endOpenPhase, {
+      await ctx.runMutation(internal.internal.roundTransitions.endVotePhase, {
         roundId: round._id,
       })
     } else if (round.state === 'finished') {
       // Round finished but game still playing — means we're between rounds.
-      // The endOpenPhase already handles advancing, so nothing extra needed.
+      // The endVotePhase already handles advancing, so nothing extra needed.
     }
   },
 })

@@ -48,8 +48,8 @@ export function RoundScreen({ game }: { game: Doc<'games'> }) {
         >
           {round.state === 'caption'
             ? 'CAPTIONING...'
-            : round.state === 'open'
-              ? 'CAPTION + VOTE'
+            : round.state === 'vote'
+              ? 'VOTING...'
               : 'ROUND COMPLETE'}
         </div>
         <button

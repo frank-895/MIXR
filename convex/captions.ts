@@ -21,14 +21,9 @@ export const submit = mutation({
 
     const now = Date.now()
 
-    // Allow captioning during "caption" and "open" phases
-    if (round.state === 'caption') {
-      if (now > round.captionEndsAt) throw new Error('TOO LATE FOR THIS ROUND')
-    } else if (round.state === 'open') {
-      if (now > round.voteEndsAt) throw new Error('TOO LATE FOR THIS ROUND')
-    } else {
-      throw new Error('CAPTION REJECTED')
-    }
+    // Only allow captioning during the caption phase
+    if (round.state !== 'caption') throw new Error('CAPTION REJECTED')
+    if (now > round.captionEndsAt) throw new Error('TOO LATE FOR THIS ROUND')
 
     const normalized = normalizeCaptionText(args.text)
     if (!normalized) throw new Error('WRITE A CAPTION')
