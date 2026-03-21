@@ -32,7 +32,7 @@ export function PlayerApp({ gameCode }: { gameCode: string }) {
   }
 
   if (game.state === 'lobby') {
-    return <WaitingScreen gameId={game._id} />
+    return <WaitingScreen />
   }
 
   if (game.state === 'finished') {
