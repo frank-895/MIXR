@@ -191,6 +191,7 @@ export const startGame = mutation({
       state: 'caption',
       captionEndsAt: now + game.captionPhaseDurationMs,
       voteEndsAt: 0,
+      voteSnapshotReady: false,
     })
 
     const scheduledEndCaptionJobId = await ctx.scheduler.runAfter(

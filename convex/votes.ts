@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 import { internal } from './_generated/api'
-import type { Id } from './_generated/dataModel'
+import type { Doc, Id } from './_generated/dataModel'
 import { mutation, type QueryCtx, query } from './_generated/server'
 import { getPlayerModerationError, isPlayerKicked } from './captionModeration'
 import { VOTE_COOLDOWN_MS } from './constants'
@@ -10,19 +10,28 @@ import { logBoundaryEvent } from './logging'
 async function isPlayerInRoundGame(
   ctx: QueryCtx,
   args: { playerId: Id<'players'>; roundId: Id<'rounds'> }
-): Promise<boolean> {
+): Promise<{ player: Doc<'players'>; round: Doc<'rounds'> } | null> {
   const [player, round] = await Promise.all([
     ctx.db.get(args.playerId),
     ctx.db.get(args.roundId),
   ])
 
-  return Boolean(player && round && player.gameId === round.gameId)
+  if (!player || !round || player.gameId !== round.gameId) {
+    return null
+  }
+
+  return { player, round }
 }
 
 async function getEligibleCandidates(
   ctx: QueryCtx,
-  args: { playerId: Id<'players'>; roundId: Id<'rounds'> }
+  args: { playerId: Id<'players'>; roundId: Id<'rounds'> },
+  round: { voteSnapshotReady?: boolean; state: string }
 ) {
+  if (round.state !== 'vote' || round.voteSnapshotReady !== true) {
+    return []
+  }
+
   const [player, candidates, playerVotes] = await Promise.all([
     ctx.db.get(args.playerId),
     ctx.db
@@ -58,16 +67,25 @@ export const getVoteSnapshot = query({
   handler: async (
     ctx,
     args
-  ): Promise<Array<{ captionId: Id<'captions'>; text: string }>> => {
-    if (!(await isPlayerInRoundGame(ctx, args))) {
-      return []
+  ): Promise<{
+    ready: boolean
+    candidates: Array<{ captionId: Id<'captions'>; text: string }>
+  }> => {
+    const membership = await isPlayerInRoundGame(ctx, args)
+    if (!membership) {
+      return { ready: false, candidates: [] }
     }
 
-    const candidates = await getEligibleCandidates(ctx, args)
-    return candidates.map((candidate) => ({
-      captionId: candidate.captionId,
-      text: candidate.text,
-    }))
+    const candidates = await getEligibleCandidates(ctx, args, membership.round)
+    return {
+      ready:
+        membership.round.state === 'vote' &&
+        membership.round.voteSnapshotReady === true,
+      candidates: candidates.map((candidate) => ({
+        captionId: candidate.captionId,
+        text: candidate.text,
+      })),
+    }
   },
 })
 
@@ -81,11 +99,12 @@ export const getCandidates = query({
     ctx,
     args
   ): Promise<Array<{ captionId: Id<'captions'>; text: string }>> => {
-    if (!(await isPlayerInRoundGame(ctx, args))) {
+    const membership = await isPlayerInRoundGame(ctx, args)
+    if (!membership) {
       return []
     }
 
-    const candidates = await getEligibleCandidates(ctx, args)
+    const candidates = await getEligibleCandidates(ctx, args, membership.round)
     return candidates.slice(0, args.count).map((candidate) => ({
       captionId: candidate.captionId,
       text: candidate.text,

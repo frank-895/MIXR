@@ -672,11 +672,22 @@ async function runVotePhase(args: {
   await Promise.all(
     args.bots.map(async (bot) => {
       await sleep(randomDelay(bot.voteIntervalMs))
-      const candidates = await args.client.query(api.votes.getVoteSnapshot, {
+      let snapshot = await args.client.query(api.votes.getVoteSnapshot, {
         playerId: bot.playerId,
         roundId: args.round._id,
       })
-      const remainingCandidates = [...candidates]
+      while (
+        !snapshot.ready &&
+        Date.now() < args.round.voteEndsAt - VOTE_SUBMISSION_GUARD_MS
+      ) {
+        await sleep(Math.min(bot.voteIntervalMs, POLL_INTERVAL_MS))
+        snapshot = await args.client.query(api.votes.getVoteSnapshot, {
+          playerId: bot.playerId,
+          roundId: args.round._id,
+        })
+      }
+      if (!snapshot.ready) return
+      const remainingCandidates = [...snapshot.candidates]
 
       while (Date.now() < args.round.voteEndsAt - VOTE_SUBMISSION_GUARD_MS) {
         if (remainingCandidates.length === 0) return

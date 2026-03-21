@@ -24,13 +24,11 @@ export const endCaptionPhase = internalMutation({
     if (!game) return
 
     const now = Date.now()
-    await initializeRoundVoteArtifacts(ctx, round)
-
-    await ctx.db.patch(args.roundId, {
-      state: 'vote',
-      voteEndsAt: now + game.votePhaseDurationMs,
-      scheduledEndCaptionJobId: undefined,
-    })
+    const scheduledPrepareVoteArtifactsJobId = await ctx.scheduler.runAfter(
+      0,
+      internal.internal.roundTransitions.prepareVotePhaseArtifacts,
+      { roundId: args.roundId }
+    )
 
     const scheduledEndVoteJobId = await ctx.scheduler.runAfter(
       game.votePhaseDurationMs,
@@ -39,7 +37,35 @@ export const endCaptionPhase = internalMutation({
     )
 
     await ctx.db.patch(args.roundId, {
+      state: 'vote',
+      voteEndsAt: now + game.votePhaseDurationMs,
+      voteSnapshotReady: false,
+      scheduledEndCaptionJobId: undefined,
+      scheduledPrepareVoteArtifactsJobId,
       scheduledEndVoteJobId,
+    })
+  },
+})
+
+export const prepareVotePhaseArtifacts = internalMutation({
+  args: { roundId: v.id('rounds') },
+  handler: async (ctx, args) => {
+    const round = await ctx.db.get(args.roundId)
+    if (!round || round.state !== 'vote') return
+    if (round.voteSnapshotReady === true) {
+      if (round.scheduledPrepareVoteArtifactsJobId) {
+        await ctx.db.patch(args.roundId, {
+          scheduledPrepareVoteArtifactsJobId: undefined,
+        })
+      }
+      return
+    }
+
+    await initializeRoundVoteArtifacts(ctx, round)
+
+    await ctx.db.patch(args.roundId, {
+      voteSnapshotReady: true,
+      scheduledPrepareVoteArtifactsJobId: undefined,
     })
   },
 })
@@ -53,10 +79,16 @@ export const endVotePhase = internalMutation({
     if (round.scheduledEndVoteJobId) {
       await ctx.scheduler.cancel(round.scheduledEndVoteJobId)
     }
+    if (round.scheduledPrepareVoteArtifactsJobId) {
+      await ctx.scheduler.cancel(round.scheduledPrepareVoteArtifactsJobId)
+    }
     if (round.scheduledRefreshStatsJobId) {
       await ctx.scheduler.cancel(round.scheduledRefreshStatsJobId)
     }
 
+    if (round.voteSnapshotReady !== true) {
+      await initializeRoundVoteArtifacts(ctx, round)
+    }
     await recomputeRoundAggregates(ctx, args.roundId)
 
     // Check if there are any captions to reveal
@@ -69,6 +101,8 @@ export const endVotePhase = internalMutation({
       // No captions — skip reveal, go straight to finished
       await ctx.db.patch(args.roundId, {
         state: 'finished',
+        voteSnapshotReady: true,
+        scheduledPrepareVoteArtifactsJobId: undefined,
         scheduledEndVoteJobId: undefined,
         scheduledRefreshStatsJobId: undefined,
       })
@@ -79,6 +113,8 @@ export const endVotePhase = internalMutation({
     const now = Date.now()
     await ctx.db.patch(args.roundId, {
       state: 'reveal',
+      voteSnapshotReady: true,
+      scheduledPrepareVoteArtifactsJobId: undefined,
       scheduledEndVoteJobId: undefined,
       scheduledRefreshStatsJobId: undefined,
       revealEndsAt: now + REVEAL_PHASE_DURATION_MS,
@@ -148,6 +184,7 @@ async function advanceGame(
       state: 'caption',
       captionEndsAt: now + game.captionPhaseDurationMs,
       voteEndsAt: 0,
+      voteSnapshotReady: false,
     })
 
     const scheduledEndCaptionJobId = await ctx.scheduler.runAfter(

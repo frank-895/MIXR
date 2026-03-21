@@ -29,7 +29,11 @@ export default defineSchema({
     state: v.string(),
     captionEndsAt: v.number(),
     voteEndsAt: v.number(),
+    voteSnapshotReady: v.optional(v.boolean()),
     scheduledEndCaptionJobId: v.optional(v.id('_scheduled_functions')),
+    scheduledPrepareVoteArtifactsJobId: v.optional(
+      v.id('_scheduled_functions')
+    ),
     scheduledEndVoteJobId: v.optional(v.id('_scheduled_functions')),
     revealEndsAt: v.optional(v.number()),
     scheduledEndRevealJobId: v.optional(v.id('_scheduled_functions')),

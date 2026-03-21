@@ -168,15 +168,17 @@ export function VoteScreen({
   )
   const { error, clearError, reject } = useActionFeedback()
   const current = localCandidates[0]
+  const snapshotReady = snapshot?.ready ?? false
 
   useEffect(() => {
     if (initializedRoundId === round._id) return
     setLocalCandidates([])
+    setInitializedRoundId(null)
   }, [initializedRoundId, round._id])
 
   useEffect(() => {
-    if (!snapshot || initializedRoundId === round._id) return
-    setLocalCandidates(snapshot)
+    if (!snapshot || !snapshot.ready || initializedRoundId === round._id) return
+    setLocalCandidates(snapshot.candidates)
     setInitializedRoundId(round._id)
   }, [initializedRoundId, round._id, snapshot])
 
@@ -254,6 +256,21 @@ export function VoteScreen({
               {error}
             </p>
           )
+        ) : snapshot === undefined || !snapshotReady ? (
+          <div
+            className="brutal-card"
+            style={{ padding: 32, textAlign: 'center' }}
+          >
+            <span
+              className="material-symbols-outlined animate-spin"
+              aria-hidden="true"
+              style={{ fontSize: 48, marginBottom: 16, display: 'block' }}
+            >
+              hourglass_empty
+            </span>
+            <h2>PREPARING VOTES...</h2>
+            <p style={{ marginTop: 8 }}>HOLD TIGHT</p>
+          </div>
         ) : (
           <div
             className="brutal-card"
