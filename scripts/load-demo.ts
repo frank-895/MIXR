@@ -74,11 +74,6 @@ type Attempts = {
   captions: number
   votes: number
 }
-type Latencies = {
-  joins: number[]
-  captions: number[]
-  votes: number[]
-}
 
 const BOT_NAME_PREFIX = 'BOT'
 const BOT_NAME_MIN_TOTAL_LENGTH = 6
@@ -88,7 +83,6 @@ const DEFAULT_SUMMARY_PREFIX = 'mixr-load-demo'
 const GAME_LOOKUP_TIMEOUT_MS = 10 * 60 * 1000
 const GAME_START_TIMEOUT_MS = 15 * 60 * 1000
 const POLL_INTERVAL_MS = 750
-const DASHBOARD_INTERVAL_MS = 1000
 const CAPTION_SUBMISSION_GUARD_MS = 1500
 const VOTE_SUBMISSION_GUARD_MS = 1000
 
@@ -266,11 +260,6 @@ function joinDelayForBot(
   return baseDelay + randomDelay(slotSize)
 }
 
-function average(values: number[]): number {
-  if (values.length === 0) return 0
-  return values.reduce((sum, value) => sum + value, 0) / values.length
-}
-
 function stableHash(input: string): number {
   let hash = 2166136261
   for (let i = 0; i < input.length; i++) {
@@ -432,29 +421,6 @@ function createStatus(gameCode: string): RuntimeStatus {
   }
 }
 
-function renderDashboard(
-  config: LoadDemoConfig,
-  status: RuntimeStatus,
-  attempts: Attempts,
-  latencies: Latencies,
-  errors: Record<string, number>
-): void {
-  const lines = [
-    'Mixr load/demo harness',
-    `code=${status.gameCode}`,
-    `phase=${status.phase} game=${status.gameState} round=${status.currentRound}/${status.expectedRounds || '?'}`,
-    `bots=${status.botsJoined}/${config.botCount} humanObserved=${status.humanPlayersObserved}`,
-    `captions round=${status.captionsThisRound} total=${status.totalCaptions}`,
-    `votes round=${status.votesThisRound} total=${status.totalVotes}`,
-    `avg join=${average(latencies.joins).toFixed(0)}ms caption=${average(latencies.captions).toFixed(0)}ms vote=${average(latencies.votes).toFixed(0)}ms`,
-    `errorRate=${(errorRate(attempts, errors) * 100).toFixed(2)}% errors=${JSON.stringify(errors)}`,
-    `${status.lastMessage} | includesExternalEmbeddingLatency=true`,
-  ]
-
-  if (process.stdout.isTTY) console.clear()
-  console.log(lines.join('\n'))
-}
-
 async function recordWrite(path: string, summary: RunSummary): Promise<void> {
   await writeFile(path, `${JSON.stringify(summary, null, 2)}\n`, 'utf8')
 }
@@ -486,7 +452,6 @@ async function joinOneBot(args: {
   config: LoadDemoConfig
   status: RuntimeStatus
   attempts: Attempts
-  latencies: Latencies
   errors: Record<string, number>
 }): Promise<BotPlayer | null> {
   await sleep(
@@ -500,7 +465,6 @@ async function joinOneBot(args: {
   for (let attempt = 0; attempt < 4; attempt++) {
     const name = botNameFor(args.botIndex, attempt)
     args.attempts.joins += 1
-    const startedAt = performance.now()
 
     try {
       const playerId = await args.client.mutation(
@@ -508,7 +472,6 @@ async function joinOneBot(args: {
         { gameId: args.gameId, name },
         { skipQueue: true }
       )
-      args.latencies.joins.push(performance.now() - startedAt)
       args.status.botsJoined += 1
       args.status.lastMessage = `Joined ${name}`
       return {
@@ -525,7 +488,6 @@ async function joinOneBot(args: {
         ),
       }
     } catch (error) {
-      args.latencies.joins.push(performance.now() - startedAt)
       const key = classifyError('join', error)
       args.errors[key] = (args.errors[key] ?? 0) + 1
       if (key !== 'join_name_taken') {
@@ -544,7 +506,6 @@ async function joinBots(args: {
   config: LoadDemoConfig
   status: RuntimeStatus
   attempts: Attempts
-  latencies: Latencies
   errors: Record<string, number>
 }): Promise<BotPlayer[]> {
   args.status.phase = 'joining'
@@ -557,27 +518,16 @@ async function joinBots(args: {
   return bots.filter((bot): bot is BotPlayer => bot !== null)
 }
 
-async function fetchPlayers(
-  client: ConvexHttpClient,
-  gameId: Game['_id']
-): Promise<Player[]> {
-  return await client.query(api.players.listByGame, { gameId })
-}
-
-async function isRoundStillActive(args: {
-  client: ConvexHttpClient
-  gameId: Game['_id']
-  roundId: Round['_id']
-  state: Round['state']
-}): Promise<boolean> {
-  const currentRound = await args.client.query(api.rounds.getCurrent, {
-    gameId: args.gameId,
-  })
-
-  return Boolean(
-    currentRound &&
-      currentRound._id === args.roundId &&
-      currentRound.state === args.state
+function updateHumanPlayersObserved(args: {
+  status: RuntimeStatus
+  botCount: number
+  activePlayerCount: number | undefined
+}): void {
+  const activePlayerCount = args.activePlayerCount ?? 0
+  const humanPlayersObserved = Math.max(0, activePlayerCount - args.botCount)
+  args.status.humanPlayersObserved = Math.max(
+    args.status.humanPlayersObserved,
+    humanPlayersObserved
   )
 }
 
@@ -597,18 +547,14 @@ async function waitForGameStart(args: {
     })
     if (!game) throw new Error('Game disappeared before start')
 
-    const players = await fetchPlayers(args.client, args.gameId)
-    const humanPlayersObserved = players.filter(
-      (player) => !args.botIds.has(player._id)
-    ).length
-
     args.status.gameState = game.state
     args.status.currentRound = game.currentRound
     args.status.expectedRounds = game.totalRounds
-    args.status.humanPlayersObserved = Math.max(
-      args.status.humanPlayersObserved,
-      humanPlayersObserved
-    )
+    updateHumanPlayersObserved({
+      status: args.status,
+      botCount: args.botIds.size,
+      activePlayerCount: game.activePlayerCount,
+    })
 
     if (game.state === 'playing' || game.state === 'finished') {
       args.status.phase = 'running'
@@ -629,10 +575,8 @@ async function runCaptionPhase(args: {
   gameId: Game['_id']
   round: Round
   bots: BotPlayer[]
-  config: LoadDemoConfig
   status: RuntimeStatus
   attempts: Attempts
-  latencies: Latencies
   errors: Record<string, number>
 }): Promise<void> {
   args.status.phase = `caption-round-${args.round.roundNumber}`
@@ -648,16 +592,7 @@ async function runCaptionPhase(args: {
         Date.now() <
         args.round.captionEndsAt - CAPTION_SUBMISSION_GUARD_MS
       ) {
-        const stillActive = await isRoundStillActive({
-          client: args.client,
-          gameId: args.gameId,
-          roundId: args.round._id,
-          state: 'caption',
-        })
-        if (!stillActive) return
-
         args.attempts.captions += 1
-        const startedAt = performance.now()
 
         try {
           await args.client.mutation(
@@ -672,11 +607,9 @@ async function runCaptionPhase(args: {
             },
             { skipQueue: true }
           )
-          args.latencies.captions.push(performance.now() - startedAt)
           args.status.captionsThisRound += 1
           args.status.totalCaptions += 1
         } catch (error) {
-          args.latencies.captions.push(performance.now() - startedAt)
           const key = classifyError('caption', error)
           args.errors[key] = (args.errors[key] ?? 0) + 1
           if (key === 'caption_closed' || key === 'caption_late') return
@@ -689,65 +622,63 @@ async function runCaptionPhase(args: {
   )
 }
 
+async function waitForVotePhaseReadiness(args: {
+  client: ConvexHttpClient
+  gameId: Game['_id']
+  roundId: Round['_id']
+  voteEndsAt: number
+}): Promise<boolean> {
+  while (Date.now() < args.voteEndsAt - VOTE_SUBMISSION_GUARD_MS) {
+    const round = await args.client.query(api.rounds.getCurrent, {
+      gameId: args.gameId,
+    })
+
+    if (!round || round._id !== args.roundId || round.state !== 'vote') {
+      return false
+    }
+
+    if (round.voteSnapshotReady === true) {
+      return true
+    }
+
+    await sleep(POLL_INTERVAL_MS)
+  }
+
+  return false
+}
+
 async function runVotePhase(args: {
   client: ConvexHttpClient
   gameId: Game['_id']
   round: Round
   bots: BotPlayer[]
-  config: LoadDemoConfig
   status: RuntimeStatus
   attempts: Attempts
-  latencies: Latencies
   errors: Record<string, number>
 }): Promise<void> {
   args.status.phase = `vote-round-${args.round.roundNumber}`
   args.status.votesThisRound = 0
   args.status.lastMessage = `Casting votes for round ${args.round.roundNumber}`
 
+  const ready = await waitForVotePhaseReadiness({
+    client: args.client,
+    gameId: args.gameId,
+    roundId: args.round._id,
+    voteEndsAt: args.round.voteEndsAt,
+  })
+  if (!ready) return
+
   await Promise.all(
     args.bots.map(async (bot) => {
       await sleep(randomDelay(bot.voteIntervalMs))
-      let stillActive = await isRoundStillActive({
-        client: args.client,
-        gameId: args.gameId,
-        roundId: args.round._id,
-        state: 'vote',
-      })
-      if (!stillActive) return
-
-      let snapshot = await args.client.query(api.votes.getVoteSnapshot, {
+      const snapshot = await args.client.query(api.votes.getVoteSnapshot, {
         playerId: bot.playerId,
         roundId: args.round._id,
       })
-      while (
-        !snapshot.ready &&
-        Date.now() < args.round.voteEndsAt - VOTE_SUBMISSION_GUARD_MS
-      ) {
-        await sleep(Math.min(bot.voteIntervalMs, POLL_INTERVAL_MS))
-        stillActive = await isRoundStillActive({
-          client: args.client,
-          gameId: args.gameId,
-          roundId: args.round._id,
-          state: 'vote',
-        })
-        if (!stillActive) return
-        snapshot = await args.client.query(api.votes.getVoteSnapshot, {
-          playerId: bot.playerId,
-          roundId: args.round._id,
-        })
-      }
       if (!snapshot.ready) return
       const remainingCandidates = [...snapshot.candidates]
 
       while (Date.now() < args.round.voteEndsAt - VOTE_SUBMISSION_GUARD_MS) {
-        stillActive = await isRoundStillActive({
-          client: args.client,
-          gameId: args.gameId,
-          roundId: args.round._id,
-          state: 'vote',
-        })
-        if (!stillActive) return
-
         if (remainingCandidates.length === 0) return
 
         const candidateIndex = randomInt(0, remainingCandidates.length - 1)
@@ -756,7 +687,6 @@ async function runVotePhase(args: {
 
         const value = Math.random() >= 0.5
         args.attempts.votes += 1
-        const startedAt = performance.now()
 
         try {
           await args.client.mutation(
@@ -768,11 +698,9 @@ async function runVotePhase(args: {
             },
             { skipQueue: true }
           )
-          args.latencies.votes.push(performance.now() - startedAt)
           args.status.votesThisRound += 1
           args.status.totalVotes += 1
         } catch (error) {
-          args.latencies.votes.push(performance.now() - startedAt)
           const key = classifyError('vote', error)
           args.errors[key] = (args.errors[key] ?? 0) + 1
           if (key === 'vote_closed') return
@@ -792,7 +720,6 @@ async function orchestrateGame(args: {
   status: RuntimeStatus
   bots: BotPlayer[]
   attempts: Attempts
-  latencies: Latencies
   errors: Record<string, number>
   botIds: Set<Player['_id']>
 }): Promise<number> {
@@ -806,18 +733,14 @@ async function orchestrateGame(args: {
     })
     if (!game) throw new Error('Game disappeared during run')
 
-    const players = await fetchPlayers(args.client, args.gameId)
-    const humanPlayersObserved = players.filter(
-      (player) => !args.botIds.has(player._id)
-    ).length
-
     args.status.gameState = game.state
     args.status.currentRound = game.currentRound
     args.status.expectedRounds = game.totalRounds
-    args.status.humanPlayersObserved = Math.max(
-      args.status.humanPlayersObserved,
-      humanPlayersObserved
-    )
+    updateHumanPlayersObserved({
+      status: args.status,
+      botCount: args.botIds.size,
+      activePlayerCount: game.activePlayerCount,
+    })
 
     if (game.state === 'finished') {
       args.status.phase = 'finished'
@@ -840,10 +763,8 @@ async function orchestrateGame(args: {
         gameId: args.gameId,
         round,
         bots: args.bots,
-        config: args.config,
         status: args.status,
         attempts: args.attempts,
-        latencies: args.latencies,
         errors: args.errors,
       })
     }
@@ -855,10 +776,8 @@ async function orchestrateGame(args: {
         gameId: args.gameId,
         round,
         bots: args.bots,
-        config: args.config,
         status: args.status,
         attempts: args.attempts,
-        latencies: args.latencies,
         errors: args.errors,
       })
     }
@@ -876,88 +795,74 @@ async function main() {
   const config = await parseConfig()
   const client = new ConvexHttpClient(config.convexUrl, { logger: false })
   const attempts: Attempts = { joins: 0, captions: 0, votes: 0 }
-  const latencies: Latencies = { joins: [], captions: [], votes: [] }
   const errors: Record<string, number> = {}
   const startedAt = Date.now()
   const status = createStatus(config.gameCode)
-  const dashboard = setInterval(() => {
-    renderDashboard(config, status, attempts, latencies, errors)
-  }, DASHBOARD_INTERVAL_MS)
+  const initialGame = await waitForGame(client, config.gameCode, status)
 
-  try {
-    const initialGame = await waitForGame(client, config.gameCode, status)
+  status.gameCode = initialGame.code
+  status.expectedRounds = initialGame.totalRounds
 
-    status.gameCode = initialGame.code
-    status.expectedRounds = initialGame.totalRounds
-
-    if (initialGame.state !== 'lobby') {
-      throw new Error('Game must still be in lobby before adding bots')
-    }
-
-    const bots = await joinBots({
-      client,
-      gameId: initialGame._id,
-      config,
-      status,
-      attempts,
-      latencies,
-      errors,
-    })
-    const botIds = new Set(bots.map((bot) => bot.playerId))
-    status.lastMessage = `Joined ${bots.length}/${config.botCount} bots`
-
-    await waitForGameStart({
-      client,
-      gameCode: initialGame.code,
-      gameId: initialGame._id,
-      config,
-      status,
-      botIds,
-    })
-
-    const roundsCompleted = await orchestrateGame({
-      client,
-      gameCode: initialGame.code,
-      gameId: initialGame._id,
-      config,
-      status,
-      bots,
-      attempts,
-      latencies,
-      errors,
-      botIds,
-    })
-
-    const summary: RunSummary = {
-      gameCode: initialGame.code,
-      totalBotsRequested: config.botCount,
-      totalBotsJoined: bots.length,
-      humanPlayersObserved: status.humanPlayersObserved,
-      roundsCompleted,
-      totalCaptions: status.totalCaptions,
-      totalVotes: status.totalVotes,
-      startTime: new Date(startedAt).toISOString(),
-      endTime: nowIso(),
-      durationMs: Date.now() - startedAt,
-      errorCounts: errors,
-      includesExternalEmbeddingLatency: true,
-      success:
-        bots.length === config.botCount &&
-        roundsCompleted >= status.expectedRounds &&
-        errorRate(attempts, errors) <= config.maxErrorRate &&
-        (!config.waitForHumanPlayer || status.humanPlayersObserved > 0),
-    }
-
-    const summaryPath =
-      config.summaryPath ?? `${DEFAULT_SUMMARY_PREFIX}-${Date.now()}.json`
-    await recordWrite(summaryPath, summary)
-    status.lastMessage = `Summary written to ${summaryPath}`
-    renderDashboard(config, status, attempts, latencies, errors)
-    console.log(`\nSummary file: ${summaryPath}`)
-    console.log(JSON.stringify(summary, null, 2))
-  } finally {
-    clearInterval(dashboard)
+  if (initialGame.state !== 'lobby') {
+    throw new Error('Game must still be in lobby before adding bots')
   }
+
+  const bots = await joinBots({
+    client,
+    gameId: initialGame._id,
+    config,
+    status,
+    attempts,
+    errors,
+  })
+  const botIds = new Set(bots.map((bot) => bot.playerId))
+  status.lastMessage = `Joined ${bots.length}/${config.botCount} bots`
+
+  await waitForGameStart({
+    client,
+    gameCode: initialGame.code,
+    gameId: initialGame._id,
+    config,
+    status,
+    botIds,
+  })
+
+  const roundsCompleted = await orchestrateGame({
+    client,
+    gameCode: initialGame.code,
+    gameId: initialGame._id,
+    config,
+    status,
+    bots,
+    attempts,
+    errors,
+    botIds,
+  })
+
+  const summary: RunSummary = {
+    gameCode: initialGame.code,
+    totalBotsRequested: config.botCount,
+    totalBotsJoined: bots.length,
+    humanPlayersObserved: status.humanPlayersObserved,
+    roundsCompleted,
+    totalCaptions: status.totalCaptions,
+    totalVotes: status.totalVotes,
+    startTime: new Date(startedAt).toISOString(),
+    endTime: nowIso(),
+    durationMs: Date.now() - startedAt,
+    errorCounts: errors,
+    includesExternalEmbeddingLatency: true,
+    success:
+      bots.length === config.botCount &&
+      roundsCompleted >= status.expectedRounds &&
+      errorRate(attempts, errors) <= config.maxErrorRate &&
+      (!config.waitForHumanPlayer || status.humanPlayersObserved > 0),
+  }
+
+  const summaryPath =
+    config.summaryPath ?? `${DEFAULT_SUMMARY_PREFIX}-${Date.now()}.json`
+  await recordWrite(summaryPath, summary)
+  status.lastMessage = `Summary written to ${summaryPath}`
 }
 
 await main()
