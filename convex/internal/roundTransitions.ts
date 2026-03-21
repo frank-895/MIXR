@@ -3,8 +3,14 @@ import { internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
 import { internalMutation } from '../_generated/server'
-import { GAME_RETENTION_MS, REVEAL_PHASE_DURATION_MS } from '../constants'
+import { REVEAL_PHASE_DURATION_MS } from '../constants'
 import { MEME_IMAGES } from '../seed'
+import {
+  getCaptionPhaseExpiresAt,
+  getFinishedExpiresAt,
+  getRevealPhaseExpiresAt,
+  getVotePhaseExpiresAt,
+} from './gameExpiry'
 import {
   initializeRoundVoteArtifacts,
   recomputeRoundAggregates,
@@ -24,6 +30,7 @@ export const endCaptionPhase = internalMutation({
     if (!game) return
 
     const now = Date.now()
+    const voteEndsAt = now + game.votePhaseDurationMs
     const scheduledPrepareVoteArtifactsJobId = await ctx.scheduler.runAfter(
       0,
       internal.internal.roundTransitions.prepareVotePhaseArtifacts,
@@ -38,11 +45,14 @@ export const endCaptionPhase = internalMutation({
 
     await ctx.db.patch(args.roundId, {
       state: 'vote',
-      voteEndsAt: now + game.votePhaseDurationMs,
+      voteEndsAt,
       voteSnapshotReady: false,
       scheduledEndCaptionJobId: undefined,
       scheduledPrepareVoteArtifactsJobId,
       scheduledEndVoteJobId,
+    })
+    await ctx.db.patch(game._id, {
+      expiresAt: getVotePhaseExpiresAt(now, game.votePhaseDurationMs),
     })
   },
 })
@@ -111,13 +121,14 @@ export const endVotePhase = internalMutation({
     }
 
     const now = Date.now()
+    const revealEndsAt = now + REVEAL_PHASE_DURATION_MS
     await ctx.db.patch(args.roundId, {
       state: 'reveal',
       voteSnapshotReady: true,
       scheduledPrepareVoteArtifactsJobId: undefined,
       scheduledEndVoteJobId: undefined,
       scheduledRefreshStatsJobId: undefined,
-      revealEndsAt: now + REVEAL_PHASE_DURATION_MS,
+      revealEndsAt,
     })
 
     const scheduledEndRevealJobId = await ctx.scheduler.runAfter(
@@ -127,6 +138,9 @@ export const endVotePhase = internalMutation({
     )
 
     await ctx.db.patch(args.roundId, { scheduledEndRevealJobId })
+    await ctx.db.patch(round.gameId, {
+      expiresAt: getRevealPhaseExpiresAt(now),
+    })
   },
 })
 
@@ -172,10 +186,12 @@ async function advanceGame(
 
   if (game.currentRound < game.totalRounds) {
     const nextRoundNumber = game.currentRound + 1
-    await ctx.db.patch(game._id, { currentRound: nextRoundNumber })
-
     const imageUrl = MEME_IMAGES[(nextRoundNumber - 1) % MEME_IMAGES.length]
     const now = Date.now()
+    await ctx.db.patch(game._id, {
+      currentRound: nextRoundNumber,
+      expiresAt: getCaptionPhaseExpiresAt(now, game.captionPhaseDurationMs),
+    })
 
     const nextRoundId = await ctx.db.insert('rounds', {
       gameId: game._id,
@@ -201,12 +217,7 @@ async function advanceGame(
     await ctx.db.patch(game._id, {
       state: 'finished',
       finishedAt,
+      expiresAt: getFinishedExpiresAt(finishedAt),
     })
-
-    await ctx.scheduler.runAfter(
-      GAME_RETENTION_MS,
-      internal.internal.gameCleanup.cleanupFinishedGame,
-      { gameId: game._id }
-    )
   }
 }

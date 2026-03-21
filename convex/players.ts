@@ -3,6 +3,7 @@ import { mutation, query } from './_generated/server'
 import { requireGameHost } from './authHelpers'
 import { MAX_PLAYER_NAME_LENGTH, MAX_PLAYERS_PER_GAME } from './constants'
 import { hasInvalidPlayerNameChars, normalizePlayerName } from './input'
+import { getLobbyExpiresAt } from './internal/gameExpiry'
 import { logBoundaryEvent } from './logging'
 
 export const join = mutation({
@@ -102,6 +103,7 @@ export const join = mutation({
 
     await ctx.db.patch(args.gameId, {
       activePlayerCount: activePlayerCount + 1,
+      expiresAt: getLobbyExpiresAt(Date.now()),
     })
 
     logBoundaryEvent('player_joined', {
@@ -179,6 +181,7 @@ export const remove = mutation({
     const activePlayerCount = game.activePlayerCount ?? 0
     await ctx.db.patch(args.gameId, {
       activePlayerCount: Math.max(0, activePlayerCount - 1),
+      expiresAt: getLobbyExpiresAt(Date.now()),
     })
     logBoundaryEvent('player_removed', {
       gameId: args.gameId,

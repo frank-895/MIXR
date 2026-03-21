@@ -11,6 +11,10 @@ import {
   MIN_PLAYERS_TO_START,
 } from './constants'
 import { isValidGameCode, normalizeGameCode } from './input'
+import {
+  getCaptionPhaseExpiresAt,
+  getLobbyExpiresAt,
+} from './internal/gameExpiry'
 import { logBoundaryEvent } from './logging'
 import { MEME_IMAGES } from './seed'
 
@@ -128,6 +132,7 @@ export const createGame = mutation({
       captionPhaseDurationMs,
       votePhaseDurationMs,
       activePlayerCount: 0,
+      expiresAt: getLobbyExpiresAt(Date.now()),
     })
 
     return { gameId, code }
@@ -204,9 +209,12 @@ export const startGame = mutation({
       throw new Error(`NEED ${MIN_PLAYERS_TO_START} PLAYERS TO START`)
     }
 
-    await ctx.db.patch(args.gameId, { state: 'playing' })
-
     const now = Date.now()
+    await ctx.db.patch(args.gameId, {
+      state: 'playing',
+      expiresAt: getCaptionPhaseExpiresAt(now, game.captionPhaseDurationMs),
+    })
+
     const imageUrl = MEME_IMAGES[0 % MEME_IMAGES.length]
 
     const roundId = await ctx.db.insert('rounds', {

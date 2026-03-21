@@ -14,7 +14,10 @@ export default defineSchema({
     votePhaseDurationMs: v.number(),
     activePlayerCount: v.optional(v.number()),
     finishedAt: v.optional(v.number()),
-  }).index('by_code', ['code']),
+    expiresAt: v.number(),
+  })
+    .index('by_code', ['code'])
+    .index('by_expiresAt', ['expiresAt']),
 
   players: defineTable({
     gameId: v.id('games'),
