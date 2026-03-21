@@ -533,34 +533,37 @@ async function runCaptionPhase(args: {
 
   await Promise.all(
     args.bots.map(async (bot) => {
-      await sleep(randomDelay(args.config.captionJitterMs))
-      if (
-        Date.now() >=
-        args.round.captionEndsAt - CAPTION_SUBMISSION_GUARD_MS
-      ) {
-        return
-      }
+      const captionCount = randomInt(1, 3)
+      for (let i = 0; i < captionCount; i++) {
+        await sleep(randomDelay(args.config.captionJitterMs))
+        if (
+          Date.now() >=
+          args.round.captionEndsAt - CAPTION_SUBMISSION_GUARD_MS
+        ) {
+          return
+        }
 
-      args.attempts.captions += 1
-      const startedAt = performance.now()
+        args.attempts.captions += 1
+        const startedAt = performance.now()
 
-      try {
-        await args.client.mutation(
-          api.captions.submit,
-          {
-            playerId: bot.playerId,
-            roundId: args.round._id,
-            text: buildCaptionText(bot.index, args.round.roundNumber),
-          },
-          { skipQueue: true }
-        )
-        args.latencies.captions.push(performance.now() - startedAt)
-        args.status.captionsThisRound += 1
-        args.status.totalCaptions += 1
-      } catch (error) {
-        args.latencies.captions.push(performance.now() - startedAt)
-        const key = classifyError('caption', error)
-        args.errors[key] = (args.errors[key] ?? 0) + 1
+        try {
+          await args.client.mutation(
+            api.captions.submit,
+            {
+              playerId: bot.playerId,
+              roundId: args.round._id,
+              text: buildCaptionText(bot.index, args.round.roundNumber + i),
+            },
+            { skipQueue: true }
+          )
+          args.latencies.captions.push(performance.now() - startedAt)
+          args.status.captionsThisRound += 1
+          args.status.totalCaptions += 1
+        } catch (error) {
+          args.latencies.captions.push(performance.now() - startedAt)
+          const key = classifyError('caption', error)
+          args.errors[key] = (args.errors[key] ?? 0) + 1
+        }
       }
     })
   )
