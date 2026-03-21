@@ -10,6 +10,7 @@ import {
   MIN_PLAYERS_TO_START,
   normalizeGameCode,
 } from './input'
+import { logBoundaryEvent } from './logging'
 import { MEME_IMAGES } from './seed'
 
 export const skipPhase = mutation({
@@ -127,8 +128,21 @@ export const startGame = mutation({
   args: { gameId: v.id('games') },
   handler: async (ctx, args) => {
     const game = await ctx.db.get(args.gameId)
-    if (!game) throw new Error('GAME NOT FOUND')
-    if (game.state !== 'lobby') throw new Error('GAME ALREADY STARTED')
+    if (!game) {
+      logBoundaryEvent('game_start_rejected', {
+        reason: 'game_not_found',
+        gameId: args.gameId,
+      })
+      throw new Error('GAME NOT FOUND')
+    }
+    if (game.state !== 'lobby') {
+      logBoundaryEvent('game_start_rejected', {
+        reason: 'game_already_started',
+        gameId: args.gameId,
+        gameState: game.state,
+      })
+      throw new Error('GAME ALREADY STARTED')
+    }
 
     const players = await ctx.db
       .query('players')
@@ -136,6 +150,12 @@ export const startGame = mutation({
       .take(MIN_PLAYERS_TO_START)
 
     if (players.length < MIN_PLAYERS_TO_START) {
+      logBoundaryEvent('game_start_rejected', {
+        reason: 'not_enough_players',
+        gameId: args.gameId,
+        playerCount: players.length,
+        minPlayersToStart: MIN_PLAYERS_TO_START,
+      })
       throw new Error(`NEED ${MIN_PLAYERS_TO_START} PLAYERS TO START`)
     }
 
@@ -161,6 +181,15 @@ export const startGame = mutation({
 
     await ctx.db.patch(roundId, {
       scheduledEndCaptionJobId,
+    })
+
+    logBoundaryEvent('game_started', {
+      gameId: args.gameId,
+      roundId,
+      totalRounds: game.totalRounds,
+      playerCount: players.length,
+      captionPhaseDurationMs: game.captionPhaseDurationMs,
+      votePhaseDurationMs: game.votePhaseDurationMs,
     })
   },
 })

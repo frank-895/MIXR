@@ -70,12 +70,6 @@ export function getBlacklistRejectionMessage(text: string): string | null {
     BLACKLIST_PATTERNS.find(({ pattern }) => pattern.test(normalized))?.term ??
     null
 
-  console.info('[mixr-moderation] blacklist-check', {
-    originalText: text,
-    normalizedText: normalized,
-    matchedTerm,
-  })
-
   return matchedTerm ? BLACKLIST_REJECTION_MESSAGE : null
 }
 
