@@ -1,5 +1,6 @@
 import { useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
+import { Loader } from '../Loader'
 import { FinalResults } from './FinalResults'
 import { Lobby } from './Lobby'
 import { RoundScreen } from './RoundScreen'
@@ -11,12 +12,7 @@ export function HostApp({ gameCode }: { gameCode: string }) {
     return (
       <div className="host-shell">
         <main className="screen center">
-          <span
-            className="material-symbols-outlined animate-spin"
-            style={{ fontSize: 48 }}
-          >
-            hourglass_empty
-          </span>
+          <Loader />
           <h2>LOADING...</h2>
         </main>
       </div>

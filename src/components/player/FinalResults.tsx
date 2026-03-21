@@ -1,6 +1,7 @@
 import { useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { Loader } from '../Loader'
 
 type ScoreEntry = { playerId: string; name: string; totalScore: number }
 
@@ -16,12 +17,7 @@ export function FinalResults({
   if (!scores) {
     return (
       <main className="screen center">
-        <span
-          className="material-symbols-outlined animate-spin"
-          style={{ fontSize: 48 }}
-        >
-          hourglass_empty
-        </span>
+        <Loader />
         <h2>LOADING...</h2>
       </main>
     )

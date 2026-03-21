@@ -2,6 +2,7 @@ import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
 import { useCountdown } from '../../lib/useCountdown'
+import { Loader } from '../Loader'
 import { CaptionPhaseOverlay } from './CaptionPhaseOverlay'
 import { RevealScreen } from './RevealScreen'
 import { VotePhaseGrid } from './VotePhaseGrid'
@@ -18,12 +19,7 @@ export function RoundScreen({ game }: { game: Doc<'games'> }) {
     return (
       <div className="host-shell">
         <main className="screen center">
-          <span
-            className="material-symbols-outlined animate-spin"
-            style={{ fontSize: 48 }}
-          >
-            hourglass_empty
-          </span>
+          <Loader />
           <h2>LOADING ROUND...</h2>
         </main>
       </div>

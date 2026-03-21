@@ -8,11 +8,11 @@ import {
   useTransform,
 } from 'motion/react'
 import { useEffect, useState } from 'react'
-
 import { api } from '../../../convex/_generated/api'
 import type { Doc, Id } from '../../../convex/_generated/dataModel'
 import { useActionFeedback } from '../../lib/useActionFeedback'
 import { useCountdown } from '../../lib/useCountdown'
+import { Loader } from '../Loader'
 
 const SWIPE_THRESHOLD = 100
 
@@ -282,14 +282,8 @@ export function VoteScreen({
             className="brutal-card"
             style={{ padding: 32, textAlign: 'center' }}
           >
-            <span
-              className="material-symbols-outlined animate-spin"
-              aria-hidden="true"
-              style={{ fontSize: 48, marginBottom: 16, display: 'block' }}
-            >
-              hourglass_empty
-            </span>
-            <h2>PREPARING VOTES...</h2>
+            <Loader />
+            <h2 style={{ marginTop: 16 }}>PREPARING VOTES...</h2>
             <p style={{ marginTop: 8 }}>HOLD TIGHT</p>
           </div>
         ) : (
@@ -297,14 +291,8 @@ export function VoteScreen({
             className="brutal-card"
             style={{ padding: 32, textAlign: 'center' }}
           >
-            <span
-              className="material-symbols-outlined animate-spin"
-              aria-hidden="true"
-              style={{ fontSize: 48, marginBottom: 16, display: 'block' }}
-            >
-              hourglass_empty
-            </span>
-            <h2>NO MORE MEMES</h2>
+            <Loader />
+            <h2 style={{ marginTop: 16 }}>NO MORE MEMES</h2>
             <p style={{ marginTop: 8 }}>WAITING FOR NEW CAPTIONS...</p>
           </div>
         )}

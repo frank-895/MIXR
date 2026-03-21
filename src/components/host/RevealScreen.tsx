@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
+import { Loader } from '../Loader'
 
 // Steps: -1=intro, 0=3rd, 1=2nd, 2=1st, 3=leaderboard
 type RevealStep = -1 | 0 | 1 | 2 | 3
@@ -75,12 +76,7 @@ export function RevealScreen({
     return (
       <div className="host-shell">
         <main className="screen center">
-          <span
-            className="material-symbols-outlined animate-spin"
-            style={{ fontSize: 48 }}
-          >
-            hourglass_empty
-          </span>
+          <Loader />
         </main>
       </div>
     )

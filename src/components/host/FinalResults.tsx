@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
 import { useRoute } from '../../lib/useRoute'
+import { Loader } from '../Loader'
 import { GameRevealScreen } from './RevealScreen'
 
 type ScoreEntry = { playerId: string; name: string; totalScore: number }
@@ -29,12 +30,7 @@ export function FinalResults({ game }: { game: Doc<'games'> }) {
     return (
       <div className="host-shell">
         <main className="screen center">
-          <span
-            className="material-symbols-outlined animate-spin"
-            style={{ fontSize: 48 }}
-          >
-            hourglass_empty
-          </span>
+          <Loader />
           <h2>LOADING RESULTS...</h2>
         </main>
       </div>

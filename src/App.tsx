@@ -3,7 +3,7 @@ import { useConvex, useConvexAuth, useMutation } from 'convex/react'
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../convex/_generated/api'
 import { HostApp } from './components/host/HostApp'
-
+import { Loader } from './components/Loader'
 import { PlayerApp } from './components/player/PlayerApp'
 import { useActionFeedback } from './lib/useActionFeedback'
 import { useRoute } from './lib/useRoute'
@@ -65,12 +65,7 @@ function HostRoute({
   if (isLoading || !isAuthenticated) {
     return (
       <main className="screen center">
-        <span
-          className="material-symbols-outlined animate-spin"
-          style={{ fontSize: 48 }}
-        >
-          hourglass_empty
-        </span>
+        <Loader />
         <h2>{error ? "CAN'T SIGN IN HOST" : 'PREPARING HOST SESSION...'}</h2>
         {error && <p style={{ margin: 0 }}>{error}</p>}
       </main>

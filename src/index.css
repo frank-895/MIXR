@@ -963,6 +963,23 @@ p {
   animation: spin 1s linear infinite;
 }
 
+/* Brutalist square loader — gap travels around the square perimeter */
+.loader-square {
+  display: block;
+  margin: 0 auto 16px;
+  color: var(--black);
+}
+
+.loader-square-path {
+  animation: loader-gap 1.2s steps(16) infinite;
+}
+
+@keyframes loader-gap {
+  to {
+    stroke-dashoffset: -368;
+  }
+}
+
 .animate-pulse {
   animation: pulse 2s ease-in-out infinite;
 }
