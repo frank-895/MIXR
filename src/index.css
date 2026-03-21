@@ -57,6 +57,13 @@ body {
   position: relative;
 }
 
+@media (max-width: 480px) {
+  .app-shell {
+    border-left: none;
+    border-right: none;
+  }
+}
+
 .screen {
   flex: 1;
   display: flex;
@@ -806,7 +813,16 @@ p {
   padding: 16px;
   background: var(--white);
   border-top: var(--border);
+  border-left: var(--border);
+  border-right: var(--border);
   z-index: 20;
+}
+
+@media (max-width: 480px) {
+  .fixed-bottom {
+    border-left: none;
+    border-right: none;
+  }
 }
 
 /* ===== LINK ===== */
