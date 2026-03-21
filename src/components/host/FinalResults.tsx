@@ -1,11 +1,13 @@
 import { useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
+import { useRoute } from '../../lib/useRoute'
 
 type ScoreEntry = { playerId: string; name: string; totalScore: number }
 
 export function FinalResults({ game }: { game: Doc<'games'> }) {
   const scores = useQuery(api.players.getScores, { gameId: game._id })
+  const { navigate } = useRoute()
 
   if (!scores) {
     return (
@@ -82,6 +84,18 @@ export function FinalResults({ game }: { game: Doc<'games'> }) {
             </ol>
           </div>
         )}
+
+        <button
+          type="button"
+          className="brutal-btn"
+          onClick={() => navigate({})}
+          style={{ marginTop: 'auto' }}
+        >
+          <span>NEW GAME</span>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            restart_alt
+          </span>
+        </button>
       </main>
     </div>
   )
