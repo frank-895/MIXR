@@ -15,16 +15,19 @@ import { useCountdown } from '../../lib/useCountdown'
 import { Loader } from '../Loader'
 
 const SWIPE_THRESHOLD = 100
+type VoteAttemptResult = 'accepted' | 'closed' | 'rejected'
 
 function SwipeableCard({
   candidate,
   imageUrl,
   onVote,
+  onAccepted,
   disabled,
 }: {
   candidate: { captionId: Id<'captions'>; text: string }
   imageUrl: string
-  onVote: (value: boolean) => void
+  onVote: (value: boolean) => Promise<VoteAttemptResult>
+  onAccepted: () => void
   disabled: boolean
 }) {
   const x = useMotionValue(0)
@@ -41,16 +44,28 @@ function SwipeableCard({
     ])
   }
 
-  const handleDragEnd = (_: unknown, info: PanInfo) => {
+  const resetCard = () =>
+    Promise.all([
+      animate(x, 0, { type: 'spring', stiffness: 300, damping: 25 }),
+      animate(rotate, 0, { type: 'spring', stiffness: 300, damping: 25 }),
+    ])
+
+  const handleDragEnd = async (_: unknown, info: PanInfo) => {
     if (disabled) return
     const swipe = info.offset.x
     const velocity = info.velocity.x
     if (Math.abs(swipe) > SWIPE_THRESHOLD || Math.abs(velocity) > 500) {
       const dir = swipe > 0 ? 1 : -1
-      flyOff(dir)
-      onVote(swipe > 0)
+      const result = await onVote(swipe > 0)
+      if (result === 'accepted') {
+        await flyOff(dir)
+        onAccepted()
+        return
+      }
+
+      await resetCard()
     } else {
-      animate(x, 0, { type: 'spring', stiffness: 300, damping: 25 })
+      await resetCard()
     }
   }
 
@@ -173,6 +188,8 @@ export function VoteScreen({
   const { error, clearError, reject } = useActionFeedback()
   const current = localCandidates[0]
   const snapshotReady = snapshot?.ready ?? false
+  const votingClosed = seconds === 0 || !snapshotReady
+  const canVote = !submitting && !votingClosed && current !== undefined
 
   useEffect(() => {
     if (initializedRoundId === round._id) return
@@ -186,19 +203,30 @@ export function VoteScreen({
     setInitializedRoundId(round._id)
   }, [initializedRoundId, round._id, snapshot])
 
+  useEffect(() => {
+    if (!votingClosed) return
+    clearError()
+  }, [clearError, votingClosed])
+
   const handleVote = async (value: boolean) => {
-    if (!current || submitting) return
+    if (!current || !snapshotReady || seconds === 0 || submitting) {
+      return 'closed' satisfies VoteAttemptResult
+    }
     setSubmitting(true)
     clearError()
     try {
-      await castVote({
+      const result = await castVote({
         playerId,
         captionId: current.captionId,
         value,
       })
-      setLocalCandidates((existing) => existing.slice(1))
+      if (result.status === 'closed') {
+        return 'closed' satisfies VoteAttemptResult
+      }
+      return 'accepted' satisfies VoteAttemptResult
     } catch (e) {
       reject(e, 'VOTE REJECTED')
+      return 'rejected' satisfies VoteAttemptResult
     } finally {
       setSubmitting(false)
     }
@@ -257,7 +285,10 @@ export function VoteScreen({
                 candidate={current}
                 imageUrl={round.imageUrl}
                 onVote={handleVote}
-                disabled={submitting}
+                onAccepted={() =>
+                  setLocalCandidates((existing) => existing.slice(1))
+                }
+                disabled={!canVote}
               />
             </motion.div>
           ) : null}

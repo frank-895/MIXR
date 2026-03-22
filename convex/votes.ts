@@ -141,7 +141,10 @@ export const castVote = mutation({
     captionId: v.id('captions'),
     value: v.boolean(),
   },
-  handler: async (ctx, args) => {
+  handler: async (
+    ctx,
+    args
+  ): Promise<{ status: 'ok' } | { status: 'closed' }> => {
     const caption = await ctx.db.get(args.captionId)
     if (!caption) {
       logBoundaryEvent('vote_rejected', {
@@ -234,7 +237,7 @@ export const castVote = mutation({
         roundId: round._id,
         roundState: round.state,
       })
-      throw new Error('VOTING IS CLOSED')
+      return { status: 'closed' }
     }
     const now = Date.now()
     if (now > round.voteEndsAt) {
@@ -247,7 +250,7 @@ export const castVote = mutation({
         now,
         voteEndsAt: round.voteEndsAt,
       })
-      throw new Error('VOTING IS CLOSED')
+      return { status: 'closed' }
     }
 
     const latestVote = await ctx.db
@@ -287,7 +290,7 @@ export const castVote = mutation({
         captionId: args.captionId,
         roundId: round._id,
       })
-      return null
+      return { status: 'ok' }
     }
 
     await ctx.db.insert('votes', {
@@ -317,7 +320,7 @@ export const castVote = mutation({
     }
 
     await incrementCaptionStats(ctx, round, args.captionId, args.value)
-    return null
+    return { status: 'ok' }
   },
 })
 
