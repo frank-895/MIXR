@@ -22,10 +22,6 @@ export const endCaptionPhase = internalMutation({
     const round = await ctx.db.get(args.roundId)
     if (!round || round.state !== 'caption') return
 
-    if (round.scheduledEndCaptionJobId) {
-      await ctx.scheduler.cancel(round.scheduledEndCaptionJobId)
-    }
-
     const game = await ctx.db.get(round.gameId)
     if (!game) return
 
@@ -86,9 +82,6 @@ export const endVotePhase = internalMutation({
     const round = await ctx.db.get(args.roundId)
     if (!round || round.state !== 'vote') return
 
-    if (round.scheduledEndVoteJobId) {
-      await ctx.scheduler.cancel(round.scheduledEndVoteJobId)
-    }
     if (round.scheduledPrepareVoteArtifactsJobId) {
       await ctx.scheduler.cancel(round.scheduledPrepareVoteArtifactsJobId)
     }
@@ -149,10 +142,6 @@ export const endRevealPhase = internalMutation({
   handler: async (ctx, args) => {
     const round = await ctx.db.get(args.roundId)
     if (!round || round.state !== 'reveal') return
-
-    if (round.scheduledEndRevealJobId) {
-      await ctx.scheduler.cancel(round.scheduledEndRevealJobId)
-    }
 
     await ctx.db.patch(args.roundId, {
       state: 'finished',
