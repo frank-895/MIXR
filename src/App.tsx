@@ -24,11 +24,7 @@ function App() {
   }
 
   if (mode === 'host-landing') {
-    return (
-      <div className="app-shell">
-        <HostRoute navigate={navigate} />
-      </div>
-    )
+    return <HostRoute navigate={navigate} />
   }
 
   return (
@@ -209,37 +205,39 @@ function HostLanding({
   }
 
   return (
-    <main className="screen center">
-      <div className="text-center mb-8">
-        <img src="/MIXR_logo.jpg" alt="MIXR" className="brand-logo" />
-      </div>
+    <main className="host-landing">
+      <div className="host-landing__inner">
+        <div className="text-center mb-8">
+          <img src="/MIXR_logo.jpg" alt="MIXR" className="brand-logo" />
+        </div>
 
-      <div className="form-stack">
-        <RoundsPicker value={rounds} onChange={setRounds} />
-        <DurationPicker
-          label="CAPTION TIME"
-          value={captionSeconds}
-          onChange={setCaptionSeconds}
-        />
-        <DurationPicker
-          label="VOTE TIME"
-          value={voteSeconds}
-          onChange={setVoteSeconds}
-        />
-        <CaptionLimitPicker value={maxCaptions} onChange={setMaxCaptions} />
-      </div>
+        <div className="host-landing__grid">
+          <RoundsPicker value={rounds} onChange={setRounds} />
+          <DurationPicker
+            label="CAPTION TIME"
+            value={captionSeconds}
+            onChange={setCaptionSeconds}
+          />
+          <DurationPicker
+            label="VOTE TIME"
+            value={voteSeconds}
+            onChange={setVoteSeconds}
+          />
+          <CaptionLimitPicker value={maxCaptions} onChange={setMaxCaptions} />
+        </div>
 
-      <button
-        type="button"
-        className="brutal-btn"
-        onClick={handleCreate}
-        disabled={creating}
-      >
-        <span>{creating ? 'CREATING...' : 'HOST A GAME'}</span>
-        <span className="material-symbols-outlined" aria-hidden="true">
-          videogame_asset
-        </span>
-      </button>
+        <button
+          type="button"
+          className="brutal-btn"
+          onClick={handleCreate}
+          disabled={creating}
+        >
+          <span>{creating ? 'CREATING...' : 'HOST A GAME'}</span>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            videogame_asset
+          </span>
+        </button>
+      </div>
     </main>
   )
 }
