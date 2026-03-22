@@ -168,7 +168,7 @@ function MemeRevealCard({
     text: string
     score: number
     playerName: string
-    imageUrl: string
+    imageUrl?: string
   }
   config: (typeof PLACE_CONFIG)[number]
 }) {
@@ -202,7 +202,27 @@ function MemeRevealCard({
 
       {/* Meme with caption overlay */}
       <div className="meme-frame">
-        <img src={caption.imageUrl} alt="Meme template" />
+        {caption.imageUrl ? (
+          <img src={caption.imageUrl} alt="Meme template" />
+        ) : (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'grid',
+              placeItems: 'center',
+              background:
+                'linear-gradient(135deg, var(--paper) 0%, var(--yellow) 100%)',
+              color: 'var(--ink)',
+              fontFamily: 'var(--font-heading)',
+              fontSize: 20,
+              textAlign: 'center',
+              padding: 24,
+            }}
+          >
+            TEMPLATE UNAVAILABLE
+          </div>
+        )}
         <div className="reveal-caption-overlay">
           <span className="impact-text">{caption.text}</span>
         </div>
@@ -263,7 +283,7 @@ export function GameRevealScreen({
     text: string
     score: number
     playerName: string
-    imageUrl: string
+    imageUrl?: string
     roundNumber: number
   }>
   onComplete: () => void

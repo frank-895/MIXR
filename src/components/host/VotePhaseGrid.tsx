@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
 
-const VOTE_DISPLAY_THROTTLE_MS = 3_000
+const VOTE_DISPLAY_THROTTLE_MS = 2_000
 
 function useThrottled<T>(value: T, ms: number): T {
   const [throttled, setThrottled] = useState(value)
