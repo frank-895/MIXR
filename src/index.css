@@ -504,9 +504,11 @@ p {
 }
 
 .leaderboard-name {
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 18px;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1164,10 +1166,11 @@ p {
 }
 
 .vote-bar-name {
-  font-family: var(--font-heading);
-  font-size: 14px;
-  font-weight: 800;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .vote-bar-score {
@@ -1284,10 +1287,11 @@ p {
 }
 
 .reveal-author-name {
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   font-size: 20px;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .reveal-author-score {
