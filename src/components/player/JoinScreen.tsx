@@ -98,7 +98,7 @@ export function JoinScreen({
         onClick={handleJoin}
         disabled={joining || !name.trim()}
       >
-        <span>{joining ? 'JOINING...' : 'ENTER THE CHAT'}</span>
+        <span>{joining ? 'JOINING...' : 'ENTER THE GAME'}</span>
         <span className="material-symbols-outlined" aria-hidden="true">
           login
         </span>
