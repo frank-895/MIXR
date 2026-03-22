@@ -2,7 +2,7 @@ import type { FunctionReference } from 'convex/server'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
 
-const LIVE_STATS_REFRESH_DELAY_MS = 1_000
+const LIVE_STATS_REFRESH_DELAY_MS = 5_000
 const MAX_VOTES_PER_ROUND = 20_000
 const MAX_CAPTIONS_PER_ROUND = 500
 
