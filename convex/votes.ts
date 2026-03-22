@@ -7,6 +7,17 @@ import { VOTE_COOLDOWN_MS } from './constants'
 import { scheduleRoundStatsRefresh } from './internal/roundStats'
 import { logBoundaryEvent } from './logging'
 
+function stableHash(input: string): number {
+  let hash = 2166136261
+
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i)
+    hash = Math.imul(hash, 16777619)
+  }
+
+  return hash >>> 0
+}
+
 async function isPlayerInRoundGame(
   ctx: QueryCtx,
   args: { playerId: Id<'players'>; roundId: Id<'rounds'> }
@@ -53,10 +64,19 @@ async function getEligibleCandidates(
   }
 
   const votedCaptionIds = new Set(playerVotes.map((vote) => vote.captionId))
-
-  return candidates
+  const eligibleCandidates = candidates
     .filter((candidate) => candidate.authorId !== args.playerId)
     .filter((candidate) => !votedCaptionIds.has(candidate.captionId))
+
+  if (eligibleCandidates.length <= 1) {
+    return eligibleCandidates
+  }
+
+  const rotationOffset =
+    stableHash(`${args.roundId}:${args.playerId}`) % eligibleCandidates.length
+  return eligibleCandidates
+    .slice(rotationOffset)
+    .concat(eligibleCandidates.slice(0, rotationOffset))
 }
 
 export const getVoteSnapshot = query({
