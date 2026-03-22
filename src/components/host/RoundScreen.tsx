@@ -41,6 +41,18 @@ export function RoundScreen({ game }: { game: Doc<'games'> }) {
           <div className="badge badge--primary">
             {game.currentRound} / {game.totalRounds}
           </div>
+          <div
+            className="badge"
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 18 }}
+            >
+              group
+            </span>
+            {game.activePlayerCount ?? 0}
+          </div>
           {round.state !== 'finished' && <Timer targetTime={targetTime} />}
         </div>
         <div
