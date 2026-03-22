@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
-import type { Doc } from '../../../convex/_generated/dataModel'
+import type { Doc, Id } from '../../../convex/_generated/dataModel'
 import { useActionFeedback } from '../../lib/useActionFeedback'
 
 export function Lobby({
@@ -30,7 +30,7 @@ export function Lobby({
     }
   }
 
-  const handleRemovePlayer = async (playerId: Doc<'players'>['_id']) => {
+  const handleRemovePlayer = async (playerId: Id<'players'>) => {
     clearError()
     try {
       await removePlayer({ gameId: game._id, playerId })

@@ -24,7 +24,7 @@ export function CaptionScreen({
     gameId: game._id,
     playerId,
   })
-  const myCaptions = useQuery(api.captions.getPlayerCaptions, {
+  const captionStatus = useQuery(api.captions.getPlayerCaptionStatus, {
     playerId,
     roundId: round._id,
   })
@@ -86,7 +86,7 @@ export function CaptionScreen({
   }
 
   const maxCaptions = game.maxCaptionsPerPlayer ?? Infinity
-  const captionCount = myCaptions?.length ?? 0
+  const captionCount = captionStatus?.count ?? 0
   const limitReached = captionCount >= maxCaptions
 
   const formatted = String(seconds).padStart(2, '0')

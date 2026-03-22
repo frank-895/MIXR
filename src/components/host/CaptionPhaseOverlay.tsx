@@ -1,7 +1,5 @@
-import { useQuery } from 'convex/react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { api } from '../../../convex/_generated/api'
 import type { Doc, Id } from '../../../convex/_generated/dataModel'
 
 type CaptionEntry = { _id: Id<'captions'>; text: string }
@@ -28,13 +26,12 @@ function randomPosition() {
 
 export function CaptionPhaseOverlay({
   round,
+  captions,
 }: {
   round: Doc<'rounds'>
+  captions: CaptionEntry[]
   game: Doc<'games'>
 }) {
-  const captions = useQuery(api.captions.listByRound, {
-    roundId: round._id,
-  })
   const [visibleCards, setVisibleCards] = useState<VisibleCard[]>([])
   const nextKey = useRef(0)
   const shownIds = useRef(new Set<Id<'captions'>>())

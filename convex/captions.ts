@@ -197,7 +197,10 @@ export const listByRound = query({
       .withIndex('by_roundId', (q) => q.eq('roundId', args.roundId))
       .take(200)
 
-    return captions
+    return captions.map((caption) => ({
+      _id: caption._id,
+      text: caption.text,
+    }))
   },
 })
 
@@ -244,21 +247,37 @@ export const getGameTopCaptions = query({
 })
 
 export const getRoundCaptions = query({
-  args: { roundId: v.id('rounds') },
+  args: { roundId: v.id('rounds'), limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
+    const limit = args.limit ?? 200
     const captions = await ctx.db
       .query('captionRoundStats')
       .withIndex('by_roundId_and_score', (q) => q.eq('roundId', args.roundId))
       .order('desc')
-      .take(200)
+      .take(limit)
 
     return captions.map((entry) => ({
-      captionId: entry.captionId as string,
+      captionId: entry.captionId,
       text: entry.text,
       score: entry.score,
       playerName: entry.authorName,
-      imageUrl: entry.imageUrl,
     }))
+  },
+})
+
+export const getPlayerCaptionStatus = query({
+  args: { playerId: v.id('players'), roundId: v.id('rounds') },
+  handler: async (ctx, args) => {
+    const captions = await ctx.db
+      .query('captions')
+      .withIndex('by_userId_and_roundId', (q) =>
+        q.eq('userId', args.playerId).eq('roundId', args.roundId)
+      )
+      .take(50)
+
+    return {
+      count: captions.length,
+    }
   },
 })
 

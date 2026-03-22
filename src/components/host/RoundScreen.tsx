@@ -1,11 +1,13 @@
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
-import type { Doc } from '../../../convex/_generated/dataModel'
+import type { Doc, Id } from '../../../convex/_generated/dataModel'
 import { useCountdown } from '../../lib/useCountdown'
 import { Loader } from '../Loader'
 import { CaptionPhaseOverlay } from './CaptionPhaseOverlay'
 import { RevealScreen } from './RevealScreen'
 import { VotePhaseGrid } from './VotePhaseGrid'
+
+type RoundCaption = { _id: Id<'captions'>; text: string }
 
 export function RoundScreen({ game }: { game: Doc<'games'> }) {
   const round = useQuery(api.rounds.getCurrent, { gameId: game._id })
@@ -92,7 +94,11 @@ export function RoundScreen({ game }: { game: Doc<'games'> }) {
 
       {/* Main Content */}
       {round.state === 'caption' ? (
-        <CaptionPhaseOverlay round={round} game={game} />
+        <CaptionPhaseOverlay
+          round={round}
+          game={game}
+          captions={(captions ?? []) as RoundCaption[]}
+        />
       ) : round.state === 'vote' ? (
         <VotePhaseGrid round={round} game={game} />
       ) : null}

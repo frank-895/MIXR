@@ -124,7 +124,12 @@ export const listByGame = query({
       .withIndex('by_gameId', (q) => q.eq('gameId', args.gameId))
       .take(MAX_PLAYERS_PER_GAME)
 
-    return players.filter((player) => player.kickedAt === undefined)
+    return players
+      .filter((player) => player.kickedAt === undefined)
+      .map((player) => ({
+        _id: player._id,
+        name: player.name,
+      }))
   },
 })
 

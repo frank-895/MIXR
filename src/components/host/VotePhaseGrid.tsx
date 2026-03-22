@@ -45,13 +45,16 @@ export function VotePhaseGrid({
 }) {
   const captions = useQuery(api.captions.getRoundCaptions, {
     roundId: round._id,
+    limit: 5,
   })
   const throttledCaptions = useThrottled(captions, VOTE_DISPLAY_THROTTLE_MS)
 
   if (!throttledCaptions) return null
 
-  const top5 = throttledCaptions.slice(0, 5)
-  const maxScore = Math.max(1, ...top5.map((c) => Math.max(0, c.score)))
+  const maxScore = Math.max(
+    1,
+    ...throttledCaptions.map((c) => Math.max(0, c.score))
+  )
 
   return (
     <div className="vote-phase-layout">
@@ -62,7 +65,7 @@ export function VotePhaseGrid({
       </div>
 
       <div className="vote-phase-bars">
-        {top5.map((entry) => {
+        {throttledCaptions.map((entry) => {
           const clampedScore = Math.max(0, entry.score)
           const pct = (clampedScore / maxScore) * 100
           const isLeading = clampedScore === maxScore && maxScore > 0

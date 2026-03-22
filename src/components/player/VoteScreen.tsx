@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from 'convex/react'
+import { useConvex, useMutation, useQuery } from 'convex/react'
 import {
   AnimatePresence,
   animate,
@@ -168,26 +168,24 @@ export function VoteScreen({
   playerId: Id<'players'>
   game: Doc<'games'>
 }) {
+  const convex = useConvex()
   const myStats = useQuery(api.players.getMyStats, {
     gameId: game._id,
     playerId,
   })
-  const snapshot = useQuery(api.votes.getVoteSnapshot, {
-    playerId,
-    roundId: round._id,
-  })
   const castVote = useMutation(api.votes.castVote)
   const seconds = useCountdown(round.voteEndsAt)
   const [submitting, setSubmitting] = useState(false)
+  const [loadingSnapshot, setLoadingSnapshot] = useState(false)
   const [localCandidates, setLocalCandidates] = useState<
     Array<{ captionId: Id<'captions'>; text: string }>
   >([])
   const [initializedRoundId, setInitializedRoundId] = useState<string | null>(
     null
   )
+  const [snapshotReady, setSnapshotReady] = useState(false)
   const { error, clearError, reject } = useActionFeedback()
   const current = localCandidates[0]
-  const snapshotReady = snapshot?.ready ?? false
   const votingClosed = seconds === 0 || !snapshotReady
   const canVote = !submitting && !votingClosed && current !== undefined
 
@@ -195,13 +193,46 @@ export function VoteScreen({
     if (initializedRoundId === round._id) return
     setLocalCandidates([])
     setInitializedRoundId(null)
+    setSnapshotReady(false)
+    setLoadingSnapshot(false)
   }, [initializedRoundId, round._id])
 
   useEffect(() => {
-    if (!snapshot || !snapshot.ready || initializedRoundId === round._id) return
-    setLocalCandidates(snapshot.candidates)
-    setInitializedRoundId(round._id)
-  }, [initializedRoundId, round._id, snapshot])
+    if (round.voteSnapshotReady !== true || initializedRoundId === round._id) {
+      return
+    }
+
+    let cancelled = false
+
+    const loadSnapshot = async () => {
+      setLoadingSnapshot(true)
+
+      try {
+        const snapshot = await convex.query(api.votes.getVoteSnapshot, {
+          playerId,
+          roundId: round._id,
+        })
+
+        if (cancelled) return
+
+        setSnapshotReady(snapshot.ready)
+        if (!snapshot.ready) return
+
+        setLocalCandidates(snapshot.candidates)
+        setInitializedRoundId(round._id)
+      } finally {
+        if (!cancelled) {
+          setLoadingSnapshot(false)
+        }
+      }
+    }
+
+    void loadSnapshot()
+
+    return () => {
+      cancelled = true
+    }
+  }, [convex, initializedRoundId, playerId, round._id, round.voteSnapshotReady])
 
   useEffect(() => {
     if (!votingClosed) return
@@ -308,7 +339,9 @@ export function VoteScreen({
               {error}
             </p>
           )
-        ) : snapshot === undefined || !snapshotReady ? (
+        ) : loadingSnapshot ||
+          round.voteSnapshotReady !== true ||
+          !snapshotReady ? (
           <div
             className="brutal-card"
             style={{ padding: 32, textAlign: 'center' }}
