@@ -50,9 +50,11 @@ export const skipPhase = mutation({
         await ctx.db.patch(round._id, { scheduledEndVoteJobId: undefined })
       }
 
-      await ctx.runMutation(internal.internal.roundTransitions.endVotePhase, {
-        roundId: round._id,
-      })
+      await ctx.scheduler.runAfter(
+        0,
+        internal.internal.roundTransitions.endVotePhase,
+        { roundId: round._id }
+      )
     } else if (round.state === 'reveal') {
       if (round.scheduledEndRevealJobId) {
         await ctx.scheduler.cancel(round.scheduledEndRevealJobId)

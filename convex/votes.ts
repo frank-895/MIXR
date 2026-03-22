@@ -1,10 +1,13 @@
 import { v } from 'convex/values'
-import { internal } from './_generated/api'
 import type { Doc, Id } from './_generated/dataModel'
-import { mutation, type QueryCtx, query } from './_generated/server'
+import {
+  type MutationCtx,
+  mutation,
+  type QueryCtx,
+  query,
+} from './_generated/server'
 import { getPlayerModerationError, isPlayerKicked } from './captionModeration'
 import { VOTE_COOLDOWN_MS } from './constants'
-import { scheduleRoundStatsRefresh } from './internal/roundStats'
 import { logBoundaryEvent } from './logging'
 
 function stableHash(input: string): number {
@@ -313,11 +316,41 @@ export const castVote = mutation({
       })
     }
 
-    await scheduleRoundStatsRefresh(
-      ctx,
-      round._id,
-      internal.internal.roundTransitions.refreshRoundStats
-    )
+    await incrementCaptionStats(ctx, round, args.captionId, args.value)
     return null
   },
 })
+
+async function incrementCaptionStats(
+  ctx: Pick<MutationCtx, 'db'>,
+  round: Doc<'rounds'>,
+  captionId: Id<'captions'>,
+  value: boolean
+) {
+  const stat = await ctx.db
+    .query('captionRoundStats')
+    .withIndex('by_roundId_and_captionId', (q) =>
+      q.eq('roundId', round._id).eq('captionId', captionId)
+    )
+    .unique()
+  if (!stat) return
+
+  await ctx.db.patch(stat._id, {
+    exposureCount: stat.exposureCount + 1,
+    upvoteCount: stat.upvoteCount + (value ? 1 : 0),
+    downvoteCount: stat.downvoteCount + (value ? 0 : 1),
+    score: stat.score + (value ? 1 : 0),
+  })
+
+  const playerGameStat = await ctx.db
+    .query('playerGameStats')
+    .withIndex('by_gameId_and_playerId', (q) =>
+      q.eq('gameId', round.gameId).eq('playerId', stat.authorId)
+    )
+    .unique()
+  if (playerGameStat && value) {
+    await ctx.db.patch(playerGameStat._id, {
+      totalScore: playerGameStat.totalScore + 1,
+    })
+  }
+}

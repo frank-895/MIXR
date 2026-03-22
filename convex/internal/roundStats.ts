@@ -1,8 +1,6 @@
-import type { FunctionReference } from 'convex/server'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
 
-const LIVE_STATS_REFRESH_DELAY_MS = 5_000
 const MAX_VOTES_PER_ROUND = 20_000
 const MAX_CAPTIONS_PER_ROUND = 500
 
@@ -75,31 +73,6 @@ export async function initializeRoundVoteArtifacts(
       exposureCount: 0,
     })
   }
-}
-
-export async function scheduleRoundStatsRefresh(
-  ctx: DbCtx,
-  roundId: Id<'rounds'>,
-  refreshFn: FunctionReference<
-    'mutation',
-    'internal',
-    { roundId: Id<'rounds'> },
-    unknown
-  >,
-  delayMs = LIVE_STATS_REFRESH_DELAY_MS
-) {
-  const round = await ctx.db.get(roundId)
-  if (!round || round.state !== 'vote' || round.scheduledRefreshStatsJobId) {
-    return
-  }
-
-  const scheduledRefreshStatsJobId = await ctx.scheduler.runAfter(
-    delayMs,
-    refreshFn,
-    { roundId }
-  )
-
-  await ctx.db.patch(roundId, { scheduledRefreshStatsJobId })
 }
 
 export async function recomputeRoundAggregates(

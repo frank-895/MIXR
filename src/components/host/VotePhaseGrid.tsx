@@ -1,7 +1,41 @@
 import { useQuery } from 'convex/react'
 import { motion } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { Doc } from '../../../convex/_generated/dataModel'
+
+const VOTE_DISPLAY_THROTTLE_MS = 3_000
+
+function useThrottled<T>(value: T, ms: number): T {
+  const [throttled, setThrottled] = useState(value)
+  const lastUpdate = useRef(Date.now())
+  const pending = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const now = Date.now()
+    const elapsed = now - lastUpdate.current
+
+    if (elapsed >= ms) {
+      lastUpdate.current = now
+      setThrottled(value)
+    } else if (!pending.current) {
+      pending.current = setTimeout(() => {
+        lastUpdate.current = Date.now()
+        setThrottled(value)
+        pending.current = null
+      }, ms - elapsed)
+    }
+
+    return () => {
+      if (pending.current) {
+        clearTimeout(pending.current)
+        pending.current = null
+      }
+    }
+  }, [value, ms])
+
+  return throttled
+}
 
 export function VotePhaseGrid({
   round,
@@ -12,10 +46,11 @@ export function VotePhaseGrid({
   const captions = useQuery(api.captions.getRoundCaptions, {
     roundId: round._id,
   })
+  const throttledCaptions = useThrottled(captions, VOTE_DISPLAY_THROTTLE_MS)
 
-  if (!captions) return null
+  if (!throttledCaptions) return null
 
-  const top5 = captions.slice(0, 5)
+  const top5 = throttledCaptions.slice(0, 5)
   const maxScore = Math.max(1, ...top5.map((c) => Math.max(0, c.score)))
 
   return (
@@ -36,7 +71,7 @@ export function VotePhaseGrid({
               <motion.div
                 className={`vote-bar-fill${isLeading ? ' vote-bar-fill--leading' : ''}`}
                 animate={{ width: `${Math.max(pct, 8)}%` }}
-                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                transition={{ type: 'spring', stiffness: 120, damping: 20 }}
               />
               {clampedScore > 0 && (
                 <span className="vote-bar-score">{clampedScore}</span>

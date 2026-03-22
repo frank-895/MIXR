@@ -152,20 +152,6 @@ export const endRevealPhase = internalMutation({
   },
 })
 
-export const refreshRoundStats = internalMutation({
-  args: { roundId: v.id('rounds') },
-  handler: async (ctx, args) => {
-    const round = await ctx.db.get(args.roundId)
-    if (!round) return
-
-    await ctx.db.patch(args.roundId, {
-      scheduledRefreshStatsJobId: undefined,
-    })
-
-    await recomputeRoundAggregates(ctx, args.roundId)
-  },
-})
-
 async function advanceGame(
   ctx: { db: MutationCtx['db']; scheduler: MutationCtx['scheduler'] },
   gameId: Id<'games'>
