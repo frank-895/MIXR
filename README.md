@@ -1,94 +1,61 @@
-# Mixr
+# MIXR
 
-This app uses Vite, React, TypeScript, and Convex.
+🎉 MIXR is a real-time party games platform built for crowds. It is designed to support live play at scale, with a focus on fast joining, shared game state, and experiences that can handle 500+ players.
 
-## Development
+`Meme It` is the first game on the platform. Players join with a code or QR, write captions for meme images, vote in real time, and watch the winners get revealed on the host screen.
 
-```bash
-pnpm install   # install packages
-pnpm build     # creates a production build
-```
+## Why MIXR 🚀
 
-- You also need to set environment variables for convex following the .env-example file.
-- Convex needs `AI_GATEWAY_API_KEY` as an environment variable for Vercel AI Gateway. 
+- Built for large live groups, with a target of 500+ players.
+- Real-time sync powered by Convex.
+- No player account required to join and play.
+- Designed as a platform for more games beyond `Meme It`.
 
-## Local checks
+## How It Works 🎮
 
-```bash
-pre-commit install  # install pre-commit hook
-pnpm format         # formats the repo with Biome
-pnpm lint           # runs Biome's linter
-pnpm check          # runs Biome's formatter and linter checks together
-pnpm typecheck      # runs TypeScript project checks
-pnpm build          # creates a production build
-```
+1. A host creates a game.
+2. Players join on their phones with a code or QR.
+3. Everyone plays together in real time.
 
-## CI
+## Tech Stack
 
-```bash
-pnpm install --frozen-lockfile   # install dependencies in CI
-pnpm typecheck                   # run TypeScript checks
-pnpm check                       # run Biome checks
-pnpm build                       # verify the production build
-```
+- React
+- TypeScript
+- Vite
+- Convex
 
-## Load / demo harness
-
-Run bots against a manually hosted game:
+## Getting Started 🛠️
 
 ```bash
-pnpm load-demo -- --gameCode ABCD
+pnpm install
 ```
 
-Example with a custom bot count and slower join pacing:
+Create a local env file and add the values from `.env-example`:
 
 ```bash
-pnpm load-demo -- --gameCode ABCD --botCount 150 --joinJitterMs 45000
+CONVEX_DEPLOYMENT=
+VITE_CONVEX_URL=
+VITE_CONVEX_SITE_URL=
 ```
 
-Arguments:
-
-- `--gameCode`
-  Required. The 4-character game code from the host screen.
-- `--botCount`
-  Optional. Number of bots to add. Default: `200`. Maximum: `200`.
-- `--playerCount`
-  Optional legacy alias for `--botCount`.
-- `--waitForHumanPlayer`
-  Optional. `true` or `false`. When `true`, the final success result requires at least one non-bot player to have joined.
-- `--joinJitterMs`
-  Optional. Total join spread window in milliseconds. Higher values make bots appear more slowly. Default: `15000`.
-- `--captionJitterMs`
-  Optional. Upper bound input for per-bot caption cadence assignment. Default: `8000`.
-- `--voteJitterMs`
-  Optional. Upper bound input for per-bot vote cadence assignment. Default: `4000`.
-- `--maxErrorRate`
-  Optional. Maximum tolerated soft-failure rate before the run is marked unsuccessful. Default: `0.15`.
-- `--summaryPath`
-  Optional. Output path for the JSON run summary.
-
-Notes:
-
-- The runner reads `VITE_CONVEX_URL` from `.env.local`.
-- Bots now caption and vote on per-bot time intervals for a worst-case load pattern, rather than a fixed number of actions per round.
-- Start the game manually from the host UI after the bots have joined.
-- Use `pnpm load-demo -- --gameCode <CODE>` from the repo root.
-
-## Convex wipe
-
-Clear all schema-defined app and auth tables from the current Convex deployment:
+Start the app:
 
 ```bash
-pnpm wipe:convex
+pnpm dev
 ```
 
-Target production explicitly:
+Create a production build:
 
 ```bash
-pnpm wipe:convex -- --prod
+pnpm build
 ```
 
-Notes:
+## Scripts
 
-- The script always requires interactive terminal approval before running any destructive Convex CLI command.
-- This clears app tables and auth tables only. It does not clear Convex system tables such as `_scheduled_functions` or `_storage`.
+```bash
+pnpm dev
+pnpm build
+pnpm preview
+pnpm typecheck
+pnpm check
+```
